@@ -257,7 +257,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;b
   const box2 = new THREE.Box3().setFromObject(model);
   const size2 = new THREE.Vector3(); box2.getSize(size2);
   const fovRad = camera.fov*Math.PI/180;
-  const dist = Math.max(size2.x,size2.y,size2.z)/(2*Math.tan(fovRad/2))*1.5;
+  const dist = Math.max(size2.x,size2.y,size2.z)/(2*Math.tan(fovRad/2))*1.1;
   camera.position.set(0,size2.y*0.1,dist);
   camera.lookAt(0,0,0);
   grid.position.y = box2.min.y;
