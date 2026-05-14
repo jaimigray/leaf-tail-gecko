@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pacific Spiny Lumpsucker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --deep: #010a12;
+  --glow: #00c8e0;
+  --glow2: #5dffd4;
+  --text: #c8e8f4;
+  --muted: #3a6a88;
+  --border: rgba(0,200,224,0.10);
+  --serif: 'Playfair Display', Georgia, serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--deep);color:var(--text);font-family:var(--mono);}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 110%, #001e3c 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 10% 60%, rgba(0,80,140,0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 90% 30%, rgba(0,60,100,0.18) 0%, transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+.ray{position:fixed;top:-10%;width:1px;background:linear-gradient(to bottom,transparent,rgba(0,200,224,0.07),transparent);transform-origin:top center;pointer-events:none;z-index:0;}
+
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:64px;
+  border-bottom:1px solid var(--border);
+  background:rgba(1,8,18,0.9);
+  backdrop-filter:blur(16px);
+  flex-shrink:0;
+}
+
+.species-name{display:flex;flex-direction:column;gap:3px;}
+.common-name{font-family:var(--serif);font-style:italic;font-size:19px;font-weight:400;color:#fff;letter-spacing:0.01em;}
+.scientific-name{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);}
+
+.header-right{display:flex;align-items:center;gap:16px;}
+.tag{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;border:1px solid rgba(0,200,224,0.2);color:var(--glow);padding:4px 12px;border-radius:100px;}
+
+.workspace{display:flex;flex:1;overflow:hidden;}
+
+#viewport{position:relative;flex:1;overflow:hidden;cursor:grab;}
+#viewport:active{cursor:grabbing;}
+#viewport canvas{display:block;width:100%!important;height:100%!important;}
+
+.bubble{position:absolute;border-radius:50%;border:1px solid rgba(0,200,224,0.2);background:rgba(0,200,224,0.03);pointer-events:none;animation:rise linear infinite;}
+@keyframes rise{0%{transform:translateY(0) translateX(0) scale(1);opacity:0;}8%{opacity:0.8;}80%{opacity:0.4;}100%{transform:translateY(-110vh) translateX(15px) scale(1.1);opacity:0;}}
+
+#loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--deep);z-index:20;transition:opacity 0.9s;}
+#loading.fade{opacity:0;pointer-events:none;}
+.load-title{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--muted);margin-bottom:32px;letter-spacing:0.03em;}
+.load-track{width:180px;height:1px;background:rgba(0,200,224,0.1);border-radius:1px;overflow:hidden;}
+.load-fill{height:100%;background:linear-gradient(90deg,var(--glow2),var(--glow));width:0%;transition:width 0.4s;}
+
+.hint{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);background:rgba(1,8,18,0.7);backdrop-filter:blur(6px);padding:5px 16px;border:1px solid var(--border);border-radius:100px;pointer-events:none;opacity:0;transition:opacity 1.2s;white-space:nowrap;}
+.hint.show{opacity:1;}
+
+.stats{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(1,8,18,0.88);backdrop-filter:blur(8px);border-top:1px solid var(--border);pointer-events:none;}
+.stat{flex:1;padding:7px 16px;border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat-k{font-size:7px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.stat-v{font-size:11px;color:var(--text);}
+
+.panel{width:224px;flex-shrink:0;background:rgba(1,10,20,0.88);backdrop-filter:blur(20px);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.panel::-webkit-scrollbar{width:3px;}
+.panel::-webkit-scrollbar-thumb{background:var(--border);}
+
+.p-section{padding:16px 18px 12px;border-bottom:1px solid var(--border);}
+.p-label{font-size:7px;letter-spacing:0.22em;text-transform:uppercase;color:var(--glow);opacity:0.6;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.p-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:8px;}
+.ctrl-l{font-size:10px;color:var(--muted);flex-shrink:0;min-width:62px;}
+.ctrl-v{font-size:10px;color:var(--text);min-width:28px;text-align:right;}
+
+input[type=range]{flex:1;height:1px;appearance:none;background:rgba(0,200,224,0.12);border-radius:1px;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;border-radius:50%;background:var(--glow);cursor:pointer;box-shadow:0 0 8px rgba(0,200,224,0.6);}
+
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+.tog{position:relative;width:30px;height:16px;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-t{position:absolute;inset:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;cursor:pointer;transition:0.2s;}
+.tog input:checked+.tog-t{background:rgba(0,200,224,0.2);border-color:var(--glow);}
+.tog-t::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:0.2s;}
+.tog input:checked+.tog-t::after{left:16px;background:var(--glow);}
+
+.cam-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.cam-btn{padding:7px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:all 0.15s;text-align:center;}
+.cam-btn:hover{border-color:var(--glow);color:var(--glow);background:rgba(0,200,224,0.04);}
+
+.fact-card{margin:16px 18px;padding:14px;background:rgba(0,200,224,0.04);border:1px solid rgba(0,200,224,0.12);border-radius:6px;}
+.fact-label{font-size:7px;letter-spacing:0.2em;text-transform:uppercase;color:var(--glow);opacity:0.6;margin-bottom:8px;}
+.fact-text{font-family:var(--serif);font-style:italic;font-size:12px;line-height:1.6;color:var(--muted);}
+.fact-text em{color:var(--text);font-style:normal;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="species-name">
+      <div class="common-name">Pacific Spiny Lumpsucker</div>
+      <div class="scientific-name">Eumicrotremus orbis · 3D Specimen</div>
+    </div>
+    <div class="header-right">
+      <div class="tag" id="fps-tag">— fps</div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <div id="viewport">
+      <div id="loading">
+        <div class="load-title">Ascending from the depths…</div>
+        <div class="load-track"><div class="load-fill" id="load-fill"></div></div>
+      </div>
+      <div class="hint" id="hint">Drag to orbit · Scroll to zoom · Right-drag to pan</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-k">Vertices</div><div class="stat-v" id="sv">—</div></div>
+        <div class="stat"><div class="stat-k">Faces</div><div class="stat-v" id="sf">—</div></div>
+        <div class="stat"><div class="stat-k">Meshes</div><div class="stat-v" id="sm">—</div></div>
+        <div class="stat"><div class="stat-k">Materials</div><div class="stat-v" id="smat">—</div></div>
+        <div class="stat"><div class="stat-k">Approx. length</div><div class="stat-v" id="ss">—</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-section">
+        <div class="p-label">Lighting</div>
+        <div class="ctrl"><span class="ctrl-l">Ambient</span><input type="range" id="s-amb" min="0" max="3" step="0.05" value="0.6"><span class="ctrl-v" id="v-amb">0.6</span></div>
+        <div class="ctrl"><span class="ctrl-l">Key light</span><input type="range" id="s-key" min="0" max="5" step="0.1" value="2.2"><span class="ctrl-v" id="v-key">2.2</span></div>
+        <div class="ctrl"><span class="ctrl-l">Rim light</span><input type="range" id="s-rim" min="0" max="3" step="0.05" value="0.9"><span class="ctrl-v" id="v-rim">0.9</span></div>
+        <div class="ctrl"><span class="ctrl-l">Exposure</span><input type="range" id="s-exp" min="0.2" max="3" step="0.05" value="1.3"><span class="ctrl-v" id="v-exp">1.3</span></div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Display</div>
+        <div class="tog-row"><span class="ctrl-l">Auto-rotate</span><label class="tog"><input type="checkbox" id="t-rot" checked><span class="tog-t"></span></label></div>
+        <div class="tog-row"><span class="ctrl-l">Wireframe</span><label class="tog"><input type="checkbox" id="t-wire"><span class="tog-t"></span></label></div>
+        <div class="tog-row"><span class="ctrl-l">Grid floor</span><label class="tog"><input type="checkbox" id="t-grid"><span class="tog-t"></span></label></div>
+        <div class="ctrl"><span class="ctrl-l">Rotate speed</span><input type="range" id="s-spd" min="0.1" max="4" step="0.05" value="0.6"><span class="ctrl-v" id="v-spd">0.6</span></div>
+        <div class="ctrl"><span class="ctrl-l">Fog density</span><input type="range" id="s-fog" min="0" max="0.12" step="0.002" value="0.03"><span class="ctrl-v" id="v-fog">0.03</span></div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Camera</div>
+        <div class="cam-btns">
+          <button class="cam-btn" id="cb-front">Front</button>
+          <button class="cam-btn" id="cb-side">Side</button>
+          <button class="cam-btn" id="cb-top">Top</button>
+          <button class="cam-btn" id="cb-reset">Reset</button>
+        </div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">Field notes</div>
+        <div class="fact-text">A tiny, rotund fish reaching only <em>3 cm</em> in length. Uses a <em>ventral suction disc</em> — modified pelvic fins — to cling to rocks and kelp. Found in cold North Pacific waters from <em>Alaska to Japan</em>, typically at depths of 0–180 m.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  for(let i=0;i<6;i++){const r=document.createElement('div');r.className='ray';r.style.cssText=`left:${10+i*15}%;height:${60+Math.random()*80}vh;opacity:${0.3+Math.random()*0.4};transform:rotate(${-8+Math.random()*16}deg);`;document.body.appendChild(r);}
+  const vp=document.getElementById('viewport');
+  for(let i=0;i<22;i++){const b=document.createElement('div');b.className='bubble';const sz=3+Math.random()*12;b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;bottom:-20px;animation-duration:${10+Math.random()*18}s;animation-delay:${Math.random()*15}s`;vp.appendChild(b);}
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+
+<script>
+(async function(){
+  const fill = document.getElementById('load-fill');
+  fill.style.width='20%';
+
+  const renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.3;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const vp = document.getElementById('viewport');
+  vp.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x010a12);
+  scene.fog = new THREE.FogExp2(0x010a12, 0.03);
+
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.001, 500);
+
+  const ambientL = new THREE.AmbientLight(0xddeeff, 0.6);
+  scene.add(ambientL);
+  const keyL = new THREE.DirectionalLight(0xfff8f0, 2.2);
+  keyL.position.set(4,6,4);
+  keyL.castShadow=true;
+  keyL.shadow.mapSize.set(2048,2048);
+  keyL.shadow.camera.near=0.1;
+  keyL.shadow.camera.far=50;
+  scene.add(keyL);
+  const rimL = new THREE.DirectionalLight(0xaaddcc, 0.9);
+  rimL.position.set(-4,2,-4);
+  scene.add(rimL);
+  const underL = new THREE.DirectionalLight(0x334455, 0.3);
+  underL.position.set(0,-4,0);
+  scene.add(underL);
+
+  const grid = new THREE.GridHelper(10,40,0x0a3a55,0x030f1f);
+  grid.visible=false;
+  scene.add(grid);
+
+  fill.style.width='40%';
+
+  // Load GLB with Draco support — file sits next to this HTML
+  const dracoLoader = new THREE.DRACOLoader();
+  dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');
+  const loader = new THREE.GLTFLoader();
+  loader.setDRACOLoader(dracoLoader);
+
+  const gltf = await new Promise((res,rej) => {
+    loader.load(
+      'lumpsucker.glb',
+      res,
+      e => { if(e.total) fill.style.width = (40 + (e.loaded/e.total)*45) + '%'; },
+      rej
+    );
+  });
+
+  fill.style.width='90%';
+  const model = gltf.scene;
+
+  const box = new THREE.Box3().setFromObject(model);
+  const center = new THREE.Vector3();
+  const size = new THREE.Vector3();
+  box.getCenter(center); box.getSize(size);
+  const maxDim = Math.max(size.x,size.y,size.z);
+  const sc = 2/maxDim;
+  model.scale.setScalar(sc);
+  model.position.sub(center.clone().multiplyScalar(sc));
+  model.traverse(n=>{ if(n.isMesh){ n.castShadow=true; n.receiveShadow=true; } });
+  scene.add(model);
+
+  const box2 = new THREE.Box3().setFromObject(model);
+  const size2 = new THREE.Vector3(); box2.getSize(size2);
+  const fovRad = camera.fov*Math.PI/180;
+  const dist = Math.max(size2.x,size2.y,size2.z)/(2*Math.tan(fovRad/2))*1.8;
+  camera.position.set(0,size2.y*0.1,dist);
+  camera.lookAt(0,0,0);
+  grid.position.y = box2.min.y;
+
+  let verts=0,faces=0,meshes=0; const mats=new Set();
+  model.traverse(n=>{
+    if(!n.isMesh) return; meshes++;
+    if(n.geometry.attributes.position) verts+=n.geometry.attributes.position.count;
+    if(n.geometry.index) faces+=n.geometry.index.count/3;
+    else if(n.geometry.attributes.position) faces+=n.geometry.attributes.position.count/3;
+    [n.material].flat().forEach(m=>mats.add(m));
+  });
+  document.getElementById('sv').textContent=verts.toLocaleString();
+  document.getElementById('sf').textContent=Math.round(faces).toLocaleString();
+  document.getElementById('sm').textContent=meshes;
+  document.getElementById('smat').textContent=mats.size;
+  document.getElementById('ss').textContent=(size.x/sc*100).toFixed(1)+' cm';
+
+  fill.style.width='100%';
+  setTimeout(()=>{
+    document.getElementById('loading').classList.add('fade');
+    setTimeout(()=>document.getElementById('loading').style.display='none',900);
+    setTimeout(()=>{ const h=document.getElementById('hint'); h.classList.add('show'); setTimeout(()=>h.classList.remove('show'),5000); },1200);
+  },300);
+
+  let sph={theta:0,phi:Math.PI/2.2,r:dist};
+  const target=new THREE.Vector3();
+  let autoRot=true,rotSpd=0.6,dragging=false,rightDrag=false,prevM={x:0,y:0};
+
+  function applyCam(){
+    camera.position.set(
+      target.x+sph.r*Math.sin(sph.phi)*Math.sin(sph.theta),
+      target.y+sph.r*Math.cos(sph.phi),
+      target.z+sph.r*Math.sin(sph.phi)*Math.cos(sph.theta)
+    );
+    camera.lookAt(target);
+  }
+
+  const cv=renderer.domElement;
+  cv.addEventListener('mousedown',e=>{ dragging=true; rightDrag=e.button===2; prevM={x:e.clientX,y:e.clientY}; if(!rightDrag){ autoRot=false; document.getElementById('t-rot').checked=false; } });
+  window.addEventListener('mouseup',()=>dragging=false);
+  window.addEventListener('mousemove',e=>{ if(!dragging) return; const dx=e.clientX-prevM.x,dy=e.clientY-prevM.y; prevM={x:e.clientX,y:e.clientY}; if(rightDrag){ const p=0.002*sph.r; target.x-=dx*p; target.y+=dy*p; } else { sph.theta-=dx*0.005; sph.phi=Math.max(0.05,Math.min(Math.PI-0.05,sph.phi-dy*0.005)); } applyCam(); });
+  cv.addEventListener('wheel',e=>{ e.preventDefault(); sph.r=Math.max(0.05,sph.r+e.deltaY*0.001*sph.r); applyCam(); },{passive:false});
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+
+  let lastPinch=0;
+  cv.addEventListener('touchstart',e=>{ e.preventDefault(); if(e.touches.length===1){ autoRot=false; document.getElementById('t-rot').checked=false; prevM={x:e.touches[0].clientX,y:e.touches[0].clientY}; } if(e.touches.length===2) lastPinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); },{passive:false});
+  cv.addEventListener('touchmove',e=>{ e.preventDefault(); if(e.touches.length===1){ const dx=e.touches[0].clientX-prevM.x,dy=e.touches[0].clientY-prevM.y; prevM={x:e.touches[0].clientX,y:e.touches[0].clientY}; sph.theta-=dx*0.005; sph.phi=Math.max(0.05,Math.min(Math.PI-0.05,sph.phi-dy*0.005)); applyCam(); } else if(e.touches.length===2){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); sph.r=Math.max(0.05,sph.r*(lastPinch/d)); lastPinch=d; applyCam(); } },{passive:false});
+
+  function resize(){ const w=vp.clientWidth,h=vp.clientHeight; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  resize(); window.addEventListener('resize',resize);
+
+  function sl(id,vid,cb){ const el=document.getElementById(id),vl=document.getElementById(vid); el.addEventListener('input',()=>{ const v=parseFloat(el.value); cb(v); vl.textContent=v.toFixed(2).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,''); }); }
+  sl('s-amb','v-amb',v=>ambientL.intensity=v);
+  sl('s-key','v-key',v=>keyL.intensity=v);
+  sl('s-rim','v-rim',v=>rimL.intensity=v);
+  sl('s-exp','v-exp',v=>renderer.toneMappingExposure=v);
+  sl('s-spd','v-spd',v=>rotSpd=v);
+  sl('s-fog','v-fog',v=>{ if(scene.fog) scene.fog.density=v; });
+
+  document.getElementById('t-rot').addEventListener('change',e=>autoRot=e.target.checked);
+  document.getElementById('t-wire').addEventListener('change',e=>{ model.traverse(n=>{ if(n.isMesh) [n.material].flat().forEach(m=>m.wireframe=e.target.checked); }); });
+  document.getElementById('t-grid').addEventListener('change',e=>grid.visible=e.target.checked);
+
+  document.getElementById('cb-front').addEventListener('click',()=>{ sph.theta=0; sph.phi=Math.PI/2; applyCam(); });
+  document.getElementById('cb-side').addEventListener('click',()=>{ sph.theta=Math.PI/2; sph.phi=Math.PI/2; applyCam(); });
+  document.getElementById('cb-top').addEventListener('click',()=>{ sph.theta=0; sph.phi=0.05; applyCam(); });
+  document.getElementById('cb-reset').addEventListener('click',()=>{ sph={theta:0,phi:Math.PI/2.2,r:dist}; target.set(0,0,0); applyCam(); });
+
+  let frames=0,last=performance.now();
+  const fpsel=document.getElementById('fps-tag');
+  function animate(){
+    requestAnimationFrame(animate);
+    if(autoRot){ sph.theta+=0.004*rotSpd; applyCam(); }
+    renderer.render(scene,camera);
+    frames++;
+    const now=performance.now();
+    if(now-last>1000){ fpsel.textContent=Math.round(frames*1000/(now-last))+' fps'; frames=0; last=now; }
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
