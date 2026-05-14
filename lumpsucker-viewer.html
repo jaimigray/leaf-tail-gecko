@@ -302,7 +302,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;b
     setTimeout(()=>{ const h=document.getElementById('hint'); h.classList.add('show'); setTimeout(()=>h.classList.remove('show'),5000); },1200);
   },300);
 
-  const homeTarget=new THREE.Vector3(0,size2.y*0.05,size2.z*0.25);
+  const homeTarget=new THREE.Vector3(0,size2.y*0.05,size2.z*-0.1);
   let sph={theta:0,phi:Math.PI/2.2,r:dist};
   const target=homeTarget.clone();
   let autoRot=true,rotSpd=0.6,dragging=false,rightDrag=false,prevM={x:0,y:0};
