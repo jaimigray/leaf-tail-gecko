@@ -106,6 +106,23 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;b
 .fact-label{font-size:7px;letter-spacing:0.2em;text-transform:uppercase;color:var(--glow);opacity:0.6;margin-bottom:8px;}
 .fact-text{font-family:var(--serif);font-style:italic;font-size:12px;line-height:1.6;color:var(--muted);}
 .fact-text em{color:var(--text);font-style:normal;}
+
+.panel-toggle{display:none;background:transparent;border:1px solid var(--border);color:var(--glow);font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;border-radius:3px;cursor:pointer;flex-shrink:0;}
+.panel-overlay{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,0.5);}
+
+@media(max-width:600px){
+  header{padding:0 14px;height:52px;}
+  .common-name{font-size:15px;}
+  .scientific-name{font-size:8px;}
+  .panel-toggle{display:block;}
+  .panel{position:fixed;top:0;right:0;bottom:0;width:min(280px,88vw);transform:translateX(100%);transition:transform 0.25s ease;z-index:10;border-left:1px solid var(--border);}
+  .panel.open{transform:translateX(0);}
+  .panel-overlay.open{display:block;}
+  .hint{bottom:44px;font-size:8px;padding:4px 12px;}
+  .stat{padding:6px 10px;}
+  .stat-k{font-size:6px;}
+  .stat-v{font-size:10px;}
+}
 </style>
 </head>
 <body>
@@ -117,8 +134,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;b
     </div>
     <div class="header-right">
       <div class="tag" id="fps-tag">— fps</div>
+      <button class="panel-toggle" id="panel-toggle">Controls</button>
     </div>
   </header>
+  <div class="panel-overlay" id="panel-overlay"></div>
 
   <div class="workspace">
     <div id="viewport">
@@ -283,9 +302,16 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;b
     setTimeout(()=>{ const h=document.getElementById('hint'); h.classList.add('show'); setTimeout(()=>h.classList.remove('show'),5000); },1200);
   },300);
 
+  const homeTarget=new THREE.Vector3(0,size2.y*0.05,size2.z*0.25);
   let sph={theta:0,phi:Math.PI/2.2,r:dist};
-  const target=new THREE.Vector3();
+  const target=homeTarget.clone();
   let autoRot=true,rotSpd=0.6,dragging=false,rightDrag=false,prevM={x:0,y:0};
+
+  const panelEl=document.querySelector('.panel'),overlayEl=document.getElementById('panel-overlay');
+  document.getElementById('panel-toggle').addEventListener('click',()=>{ panelEl.classList.toggle('open'); overlayEl.classList.toggle('open'); });
+  overlayEl.addEventListener('click',()=>{ panelEl.classList.remove('open'); overlayEl.classList.remove('open'); });
+
+  if('ontouchstart' in window) document.getElementById('hint').textContent='Touch to orbit · Pinch to zoom';
 
   function applyCam(){
     camera.position.set(
@@ -325,7 +351,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;b
   document.getElementById('cb-front').addEventListener('click',()=>{ sph.theta=0; sph.phi=Math.PI/2; applyCam(); });
   document.getElementById('cb-side').addEventListener('click',()=>{ sph.theta=Math.PI/2; sph.phi=Math.PI/2; applyCam(); });
   document.getElementById('cb-top').addEventListener('click',()=>{ sph.theta=0; sph.phi=0.05; applyCam(); });
-  document.getElementById('cb-reset').addEventListener('click',()=>{ sph={theta:0,phi:Math.PI/2.2,r:dist}; target.set(0,0,0); applyCam(); });
+  document.getElementById('cb-reset').addEventListener('click',()=>{ sph={theta:0,phi:Math.PI/2.2,r:dist}; target.copy(homeTarget); applyCam(); });
 
   let frames=0,last=performance.now();
   const fpsel=document.getElementById('fps-tag');
