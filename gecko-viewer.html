@@ -147,6 +147,14 @@ input[type=range]::-webkit-slider-thumb{
 .tog-t::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:0.2s;}
 .tog input:checked+.tog-t::after{left:16px;background:var(--accent2);}
 
+/* color key */
+.key-group{margin-bottom:10px;}
+.key-group:last-child{margin-bottom:0;}
+.key-group-label{font-size:8px;font-family:var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.key-item{display:flex;align-items:center;gap:7px;padding:2px 0;}
+.key-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.key-name{font-size:10px;color:var(--text);}
+
 /* camera & info buttons */
 .cam-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
 .cam-btn{padding:7px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.15s;text-align:center;}
@@ -196,8 +204,8 @@ input[type=range]::-webkit-slider-thumb{
 <div id="app">
   <header>
     <div class="header-left">
-      <div class="title">Leaf-Tailed Gecko <span style="font-style:italic;font-weight:300;color:var(--muted);font-size:13px;">Uroplatus sp.</span></div>
-      <div class="subtitle">3D Skull Anatomy · Merged Animations</div>
+      <div class="title">Southern Leaf-Tailed Gecko <span style="font-style:italic;font-weight:300;color:var(--muted);font-size:13px;">Phyllurus platurus</span></div>
+      <div class="subtitle">3D Skull Anatomy · Bone Key · Merged Animations</div>
     </div>
     <div class="header-right">
       <div class="badge gold" id="anim-badge" style="display:none">▶ Playing</div>
@@ -290,11 +298,53 @@ input[type=range]::-webkit-slider-thumb{
 
         <!-- Specimen info -->
         <div class="info-card">
-          <div class="info-row"><span class="info-k">Common name</span><span class="info-v">Leaf-tailed gecko</span></div>
-          <div class="info-row"><span class="info-k">Genus</span><span class="info-v" style="font-style:italic;">Uroplatus</span></div>
-          <div class="info-row"><span class="info-k">Family</span><span class="info-v">Gekkonidae</span></div>
-          <div class="info-row"><span class="info-k">Origin</span><span class="info-v">Madagascar</span></div>
+          <div class="info-row"><span class="info-k">Common name</span><span class="info-v">Southern leaf-tailed gecko</span></div>
+          <div class="info-row"><span class="info-k">Species</span><span class="info-v" style="font-style:italic;">Phyllurus platurus</span></div>
+          <div class="info-row"><span class="info-k">Family</span><span class="info-v">Carphodactylidae</span></div>
+          <div class="info-row"><span class="info-k">Origin</span><span class="info-v">New South Wales, AU</span></div>
           <div class="info-row"><span class="info-k">Scan type</span><span class="info-v">Skull anatomy</span></div>
+        </div>
+
+        <!-- Color key -->
+        <div class="p-section">
+          <div class="p-label">Bone key</div>
+          <div class="key-group">
+            <div class="key-group-label">Cranial Elements</div>
+            <div class="key-item"><div class="key-swatch" style="background:#FF69B4"></div><span class="key-name">Premaxilla</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FFD700"></div><span class="key-name">Maxilla</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#4169E1"></div><span class="key-name">Nasal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FF8C00"></div><span class="key-name">Prefrontal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#DC143C"></div><span class="key-name">Jugal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#00CED1"></div><span class="key-name">Frontal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#32CD32"></div><span class="key-name">Postorbital</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FFA500"></div><span class="key-name">Parietal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FF4500"></div><span class="key-name">Supratemporal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#808000"></div><span class="key-name">Squamosal</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#87CEEB"></div><span class="key-name">Quadrate</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FFB6C1"></div><span class="key-name">Septomaxilla</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#D2B48C"></div><span class="key-name">Vomer</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#90EE90"></div><span class="key-name">Palatine</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#008080"></div><span class="key-name">Pterygoid</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#6495ED"></div><span class="key-name">Ectopterygoid</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#EE82EE"></div><span class="key-name">Epipterygoid</span></div>
+          </div>
+          <div class="key-group">
+            <div class="key-group-label">Braincase Elements</div>
+            <div class="key-item"><div class="key-swatch" style="background:#C0B0E8"></div><span class="key-name">Supraoccipital</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#D0C8E0"></div><span class="key-name">Prootic</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#A898D8"></div><span class="key-name">Exoccipital</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#8878C0"></div><span class="key-name">Basisphenoid</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#7060A8"></div><span class="key-name">Basioccipital</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#0000CD"></div><span class="key-name">Stapes</span></div>
+          </div>
+          <div class="key-group">
+            <div class="key-group-label">Lower Jaw Elements</div>
+            <div class="key-item"><div class="key-swatch" style="background:#00FF00"></div><span class="key-name">Dentary</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FFFF00"></div><span class="key-name">Splenial</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#D4C08C"></div><span class="key-name">Coronoid</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#40E0D0"></div><span class="key-name">Surangular</span></div>
+            <div class="key-item"><div class="key-swatch" style="background:#FF1493"></div><span class="key-name">Articular</span></div>
+          </div>
         </div>
 
       </div>
