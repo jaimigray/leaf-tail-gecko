@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<title>Animated Model Viewer</title>
+<title>Leaf-Tailed Gecko · 3D Skull Viewer</title>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
@@ -12,13 +12,13 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --bg: #090c10;
+  --bg: #060d08;
   --border: rgba(255,255,255,0.07);
-  --text: #e2e8f0;
-  --muted: #64748b;
-  --accent: #7c3aed;
-  --accent2: #a78bfa;
-  --teal: #14b8a6;
+  --text: #e2ead4;
+  --muted: #5a7060;
+  --accent: #3a7d44;
+  --accent2: #7ec850;
+  --gold: #c8a94a;
   --sans: 'Inter', system-ui, sans-serif;
   --mono: 'IBM Plex Mono', monospace;
 }
@@ -31,7 +31,7 @@ header{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 24px;height:60px;flex-shrink:0;
   border-bottom:1px solid var(--border);
-  background:rgba(9,12,16,0.97);
+  background:rgba(6,13,8,0.97);
   backdrop-filter:blur(16px);
 }
 .header-left{display:flex;flex-direction:column;gap:3px;}
@@ -39,8 +39,8 @@ header{
 .subtitle{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
 .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
 .badge{font-size:9px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:4px 10px;border-radius:100px;white-space:nowrap;}
-.badge.accent{border-color:rgba(124,58,237,0.4);color:var(--accent2);}
-.badge.teal{border-color:rgba(20,184,166,0.4);color:var(--teal);}
+.badge.accent{border-color:rgba(126,200,80,0.4);color:var(--accent2);}
+.badge.gold{border-color:rgba(200,169,74,0.4);color:var(--gold);}
 
 .workspace{display:flex;flex:1;overflow:hidden;min-height:0;}
 
@@ -48,30 +48,9 @@ header{
 model-viewer{
   display:block;position:absolute;inset:0;width:100%;height:100%;
   background-color:var(--bg);
-  --progress-bar-color:#7c3aed;
-  --progress-mask:#090c10;
+  --progress-bar-color:#7ec850;
+  --progress-mask:#060d08;
 }
-
-/* ── drop zone overlay ── */
-#drop-overlay{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:16px;
-  background:rgba(9,12,16,0.85);backdrop-filter:blur(8px);
-  pointer-events:none;transition:opacity 0.2s;z-index:10;
-}
-#drop-overlay.hidden{opacity:0;pointer-events:none;}
-#drop-overlay.drag-active{background:rgba(124,58,237,0.12);}
-.drop-icon{font-size:48px;opacity:0.5;}
-.drop-text{font-size:13px;color:var(--muted);text-align:center;line-height:1.6;}
-.drop-text strong{color:var(--text);}
-.drop-btn{
-  padding:8px 20px;border:1px solid var(--accent);color:var(--accent2);
-  background:rgba(124,58,237,0.1);font-family:var(--mono);font-size:10px;
-  letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:4px;
-  transition:all 0.15s;pointer-events:all;
-}
-.drop-btn:hover{background:rgba(124,58,237,0.2);}
-#file-input{display:none;}
 
 /* ── panel ── */
 .panel-wrap{
@@ -83,7 +62,7 @@ model-viewer{
 
 .panel-collapse-btn{
   width:32px;flex-shrink:0;
-  background:rgba(14,17,26,0.99);
+  background:rgba(8,16,10,0.99);
   border-left:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;color:var(--muted);font-size:11px;
@@ -91,13 +70,13 @@ model-viewer{
   writing-mode:vertical-rl;
   user-select:none;
 }
-.panel-collapse-btn:hover{color:var(--accent2);background:rgba(124,58,237,0.05);}
+.panel-collapse-btn:hover{color:var(--accent2);background:rgba(62,125,68,0.08);}
 .panel-collapse-btn .arrow{transition:transform 0.25s;display:inline-block;writing-mode:horizontal-tb;}
 .panel-wrap.collapsed .panel-collapse-btn .arrow{transform:rotate(180deg);}
 
 .panel{
   flex:1;min-width:0;
-  background:rgba(14,17,26,0.99);
+  background:rgba(8,16,10,0.99);
   border-left:1px solid var(--border);
   display:flex;flex-direction:column;
   overflow-y:auto;overflow-x:hidden;
@@ -122,11 +101,11 @@ model-viewer{
   color:var(--text);font-family:var(--mono);font-size:10px;padding:5px 8px;
   border-radius:4px;cursor:pointer;min-width:0;
   -webkit-appearance:none;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a7060'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 8px center;
   padding-right:24px;
 }
-.anim-clip-row select:focus{outline:none;border-color:rgba(124,58,237,0.5);}
+.anim-clip-row select:focus{outline:none;border-color:rgba(126,200,80,0.5);}
 
 .transport{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
 .t-btn{
@@ -135,8 +114,8 @@ model-viewer{
   display:flex;align-items:center;justify-content:center;
   font-size:13px;transition:all 0.15s;flex-shrink:0;
 }
-.t-btn:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(124,58,237,0.08);}
-.t-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(124,58,237,0.15);}
+.t-btn:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(62,125,68,0.1);}
+.t-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(62,125,68,0.18);}
 .t-btn.play-pause{width:36px;height:36px;font-size:16px;}
 
 .progress-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
@@ -149,15 +128,14 @@ model-viewer{
 .ctrl-v{font-size:10px;font-family:var(--mono);color:var(--text);min-width:32px;text-align:right;flex-shrink:0;}
 input[type=range]{
   flex:1;height:2px;appearance:none;
-  background:rgba(255,255,255,0.08);border-radius:2px;cursor:pointer;
-  min-width:0;
+  background:rgba(255,255,255,0.08);border-radius:2px;cursor:pointer;min-width:0;
 }
 input[type=range]::-webkit-slider-thumb{
   appearance:none;width:10px;height:10px;border-radius:50%;
   background:var(--accent2);cursor:pointer;
-  box-shadow:0 0 6px rgba(124,58,237,0.6);
+  box-shadow:0 0 6px rgba(126,200,80,0.5);
 }
-#progress-slider::-webkit-slider-thumb{background:var(--teal);box-shadow:0 0 6px rgba(20,184,166,0.6);}
+#progress-slider::-webkit-slider-thumb{background:var(--gold);box-shadow:0 0 6px rgba(200,169,74,0.5);}
 
 /* toggles */
 .tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;}
@@ -165,16 +143,21 @@ input[type=range]::-webkit-slider-thumb{
 .tog{position:relative;width:30px;height:16px;flex-shrink:0;}
 .tog input{opacity:0;width:0;height:0;}
 .tog-t{position:absolute;inset:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;cursor:pointer;transition:0.2s;}
-.tog input:checked+.tog-t{background:rgba(124,58,237,0.2);border-color:var(--accent2);}
+.tog input:checked+.tog-t{background:rgba(62,125,68,0.2);border-color:var(--accent2);}
 .tog-t::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:0.2s;}
 .tog input:checked+.tog-t::after{left:16px;background:var(--accent2);}
 
-/* camera buttons */
+/* camera & info buttons */
 .cam-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
 .cam-btn{padding:7px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.15s;text-align:center;}
-.cam-btn:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(124,58,237,0.05);}
+.cam-btn:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(62,125,68,0.06);}
 
-.no-anim-msg{font-size:10px;color:var(--muted);font-style:italic;padding:4px 0 8px;}
+/* specimen info card */
+.info-card{margin:14px 16px;padding:14px;background:rgba(126,200,80,0.04);border:1px solid rgba(126,200,80,0.1);border-radius:6px;}
+.info-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.info-row:last-child{border-bottom:none;padding-bottom:0;}
+.info-k{font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:0.06em;}
+.info-v{font-size:10px;color:var(--text);}
 
 /* ── Mobile ── */
 @media(max-width:600px){
@@ -197,12 +180,12 @@ input[type=range]::-webkit-slider-thumb{
   .panel-toggle{
     display:flex;align-items:center;justify-content:center;gap:6px;
     width:100%;padding:10px;
-    background:rgba(14,17,26,0.99);
+    background:rgba(8,16,10,0.99);
     border:none;border-top:1px solid var(--border);
     color:var(--muted);font-family:var(--mono);font-size:9px;
     letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;flex-shrink:0;
   }
-  .panel-toggle:active{background:rgba(124,58,237,0.08);}
+  .panel-toggle:active{background:rgba(62,125,68,0.1);}
   .panel-toggle-arrow{transition:transform 0.3s;}
   .panel-toggle.open .panel-toggle-arrow{transform:rotate(180deg);}
 }
@@ -213,20 +196,20 @@ input[type=range]::-webkit-slider-thumb{
 <div id="app">
   <header>
     <div class="header-left">
-      <div class="title" id="model-title">Animated Model Viewer</div>
-      <div class="subtitle" id="model-subtitle">Drop a .glb file to begin · Animation Player</div>
+      <div class="title">Leaf-Tailed Gecko <span style="font-style:italic;font-weight:300;color:var(--muted);font-size:13px;">Uroplatus sp.</span></div>
+      <div class="subtitle">3D Skull Anatomy · Merged Animations</div>
     </div>
     <div class="header-right">
-      <div class="badge teal" id="anim-badge" style="display:none">▶ Playing</div>
+      <div class="badge gold" id="anim-badge" style="display:none">▶ Playing</div>
       <div class="badge accent" id="rot-badge">● Auto-rotating</div>
-      <div class="badge" id="load-badge" style="display:none">Loading…</div>
     </div>
   </header>
 
   <div class="workspace">
-    <div class="mv-wrap" id="mv-wrap">
+    <div class="mv-wrap">
       <model-viewer
         id="mv"
+        src="leaf-tailed-gecko-compressed.glb"
         camera-controls
         auto-rotate
         rotation-per-second="20deg"
@@ -235,58 +218,43 @@ input[type=range]::-webkit-slider-thumb{
         exposure="1"
         ar
       ></model-viewer>
-
-      <!-- Drop / load overlay -->
-      <div id="drop-overlay">
-        <div class="drop-icon">🎬</div>
-        <div class="drop-text">
-          <strong>Drop a .glb file here</strong><br>
-          or click to browse
-        </div>
-        <button class="drop-btn" id="browse-btn">Browse file</button>
-        <input type="file" id="file-input" accept=".glb,.gltf">
-      </div>
     </div>
 
-    <!-- Desktop side panel -->
     <div class="panel-wrap" id="panel-wrap">
       <div class="panel-collapse-btn" id="collapse-btn">
         <span class="arrow">◀</span>
       </div>
       <div class="panel" id="panel">
 
-        <!-- Animation section -->
-        <div class="p-section" id="anim-section">
+        <!-- Animation -->
+        <div class="p-section">
           <div class="p-label">Animation</div>
-          <div class="no-anim-msg" id="no-anim-msg">No model loaded</div>
-
+          <div id="anim-loading" style="font-size:10px;color:var(--muted);font-style:italic;padding:4px 0 8px;">Loading…</div>
           <div id="anim-controls" style="display:none">
             <div class="anim-clip-row">
               <select id="clip-select" title="Animation clip"></select>
             </div>
-
             <div class="transport">
               <button class="t-btn" id="btn-prev" title="Previous clip">⏮</button>
               <button class="t-btn play-pause" id="btn-play" title="Play / Pause">▶</button>
               <button class="t-btn" id="btn-next" title="Next clip">⏭</button>
-              <button class="t-btn" id="btn-loop" title="Toggle loop" style="margin-left:4px;">🔁</button>
+              <button class="t-btn active" id="btn-loop" title="Toggle loop" style="margin-left:4px;">🔁</button>
             </div>
-
             <div class="progress-row">
               <span class="time-label" id="time-cur">0.0s</span>
               <input type="range" id="progress-slider" min="0" max="1" step="0.001" value="0">
               <span class="time-label right" id="time-dur">0.0s</span>
             </div>
-
             <div class="ctrl">
               <span class="ctrl-l">Speed</span>
               <input type="range" id="speed-slider" min="0.1" max="3" step="0.05" value="1">
-              <span class="ctrl-v" id="speed-val">1.0×</span>
+              <span class="ctrl-v" id="speed-val">1×</span>
             </div>
           </div>
+          <div id="no-anim-msg" style="display:none;font-size:10px;color:var(--muted);font-style:italic;">No animations found</div>
         </div>
 
-        <!-- Render section -->
+        <!-- Render -->
         <div class="p-section">
           <div class="p-label">Render</div>
           <div class="ctrl">
@@ -309,7 +277,7 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- Camera section -->
+        <!-- Camera -->
         <div class="p-section">
           <div class="p-label">Camera</div>
           <div class="cam-btns">
@@ -320,18 +288,19 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- File section -->
-        <div class="p-section">
-          <div class="p-label">File</div>
-          <button class="cam-btn" style="width:100%;margin-bottom:6px;" id="load-another-btn">Load another file</button>
-          <div id="file-info" style="font-size:9px;color:var(--muted);font-family:var(--mono);line-height:1.6;"></div>
+        <!-- Specimen info -->
+        <div class="info-card">
+          <div class="info-row"><span class="info-k">Common name</span><span class="info-v">Leaf-tailed gecko</span></div>
+          <div class="info-row"><span class="info-k">Genus</span><span class="info-v" style="font-style:italic;">Uroplatus</span></div>
+          <div class="info-row"><span class="info-k">Family</span><span class="info-v">Gekkonidae</span></div>
+          <div class="info-row"><span class="info-k">Origin</span><span class="info-v">Madagascar</span></div>
+          <div class="info-row"><span class="info-k">Scan type</span><span class="info-v">Skull anatomy</span></div>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- Mobile bottom panel toggle -->
   <button class="panel-toggle" id="panel-toggle">
     <span>Controls</span>
     <span class="panel-toggle-arrow">▲</span>
@@ -340,8 +309,6 @@ input[type=range]::-webkit-slider-thumb{
 
 <script>
 const mv = document.getElementById('mv');
-const overlay = document.getElementById('drop-overlay');
-const fileInput = document.getElementById('file-input');
 const clipSelect = document.getElementById('clip-select');
 const btnPlay = document.getElementById('btn-play');
 const btnPrev = document.getElementById('btn-prev');
@@ -352,86 +319,30 @@ const timeCur = document.getElementById('time-cur');
 const timeDur = document.getElementById('time-dur');
 const speedSlider = document.getElementById('speed-slider');
 const speedVal = document.getElementById('speed-val');
-const animControls = document.getElementById('anim-controls');
-const noAnimMsg = document.getElementById('no-anim-msg');
 const animBadge = document.getElementById('anim-badge');
-const rotBadge = document.getElementById('rot-badge');
-const loadBadge = document.getElementById('load-badge');
-const fileInfo = document.getElementById('file-info');
 
 let isPlaying = false;
 let looping = true;
 let scrubbingProgress = false;
 let rafId = null;
-let currentBlobUrl = null;
 
-// ── File loading ──────────────────────────────────────────────
-function loadFile(file) {
-  if (!file || !file.name.match(/\.(glb|gltf)$/i)) {
-    alert('Please drop a .glb or .gltf file.');
-    return;
-  }
-  if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-  currentBlobUrl = URL.createObjectURL(file);
+// ── Model load ────────────────────────────────────────────────
+mv.addEventListener('load', populateAnimations);
 
-  loadBadge.style.display = '';
-  overlay.classList.add('hidden');
-
-  document.getElementById('model-title').textContent = file.name.replace(/\.(glb|gltf)$/i, '');
-  document.getElementById('model-subtitle').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB · Animated GLB Viewer`;
-  fileInfo.textContent = `${file.name}\n${(file.size/1024/1024).toFixed(2)} MB`;
-
-  mv.src = currentBlobUrl;
-}
-
-// ── Drag & drop ───────────────────────────────────────────────
-const mvWrap = document.getElementById('mv-wrap');
-mvWrap.addEventListener('dragover', e => { e.preventDefault(); overlay.classList.remove('hidden'); overlay.classList.add('drag-active'); });
-mvWrap.addEventListener('dragleave', e => { if (!mvWrap.contains(e.relatedTarget)) { overlay.classList.remove('drag-active'); if (mv.src) overlay.classList.add('hidden'); } });
-mvWrap.addEventListener('drop', e => {
-  e.preventDefault();
-  overlay.classList.remove('drag-active');
-  const file = e.dataTransfer.files[0];
-  if (file) loadFile(file);
-});
-
-document.getElementById('browse-btn').addEventListener('click', () => fileInput.click());
-document.getElementById('load-another-btn').addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); fileInput.value = ''; });
-
-// ── Model load events ─────────────────────────────────────────
-mv.addEventListener('load', () => {
-  loadBadge.style.display = 'none';
-  populateAnimations();
-});
-
-mv.addEventListener('error', () => {
-  loadBadge.style.display = 'none';
-  overlay.classList.remove('hidden');
-  noAnimMsg.textContent = 'Error loading model';
-});
-
-// ── Animation setup ───────────────────────────────────────────
 function populateAnimations() {
+  document.getElementById('anim-loading').style.display = 'none';
   const clips = mv.availableAnimations;
-  clipSelect.innerHTML = '';
   if (!clips || clips.length === 0) {
-    noAnimMsg.textContent = 'No animations in this model';
-    noAnimMsg.style.display = '';
-    animControls.style.display = 'none';
-    animBadge.style.display = 'none';
+    document.getElementById('no-anim-msg').style.display = '';
     return;
   }
-  noAnimMsg.style.display = 'none';
-  animControls.style.display = '';
-
+  document.getElementById('anim-controls').style.display = '';
   clips.forEach((name, i) => {
     const opt = document.createElement('option');
     opt.value = name;
     opt.textContent = name || `Clip ${i}`;
     clipSelect.appendChild(opt);
   });
-
   playClip(clips[0]);
 }
 
@@ -463,10 +374,8 @@ function startProgressRAF() {
   rafId = requestAnimationFrame(tick);
 }
 
-// Clip selector
 clipSelect.addEventListener('change', () => playClip(clipSelect.value));
 
-// Play / pause
 btnPlay.addEventListener('click', () => {
   if (isPlaying) {
     mv.pause();
@@ -483,42 +392,30 @@ btnPlay.addEventListener('click', () => {
   }
 });
 
-// Prev / next clip
 btnPrev.addEventListener('click', () => {
-  const opts = [...clipSelect.options];
   const idx = clipSelect.selectedIndex;
   if (idx > 0) { clipSelect.selectedIndex = idx - 1; playClip(clipSelect.value); }
 });
 btnNext.addEventListener('click', () => {
-  const opts = [...clipSelect.options];
   const idx = clipSelect.selectedIndex;
-  if (idx < opts.length - 1) { clipSelect.selectedIndex = idx + 1; playClip(clipSelect.value); }
+  if (idx < clipSelect.options.length - 1) { clipSelect.selectedIndex = idx + 1; playClip(clipSelect.value); }
 });
 
-// Loop toggle
 btnLoop.addEventListener('click', () => {
   looping = !looping;
   btnLoop.classList.toggle('active', looping);
-  if (isPlaying) {
-    mv.play({ repetitions: looping ? Infinity : 1 });
-  }
+  if (isPlaying) mv.play({ repetitions: looping ? Infinity : 1 });
 });
-btnLoop.classList.add('active'); // default on
 
-// Progress scrub
-progressSlider.addEventListener('mousedown', () => { scrubbingProgress = true; });
-progressSlider.addEventListener('touchstart', () => { scrubbingProgress = true; }, {passive:true});
+progressSlider.addEventListener('mousedown', () => scrubbingProgress = true);
+progressSlider.addEventListener('touchstart', () => scrubbingProgress = true, {passive:true});
 progressSlider.addEventListener('input', () => {
   const dur = mv.duration || 0;
-  if (dur > 0) {
-    mv.currentTime = parseFloat(progressSlider.value) * dur;
-    timeCur.textContent = mv.currentTime.toFixed(1) + 's';
-  }
+  if (dur > 0) { mv.currentTime = parseFloat(progressSlider.value) * dur; timeCur.textContent = mv.currentTime.toFixed(1) + 's'; }
 });
-progressSlider.addEventListener('mouseup', () => { scrubbingProgress = false; });
-progressSlider.addEventListener('touchend', () => { scrubbingProgress = false; });
+progressSlider.addEventListener('mouseup', () => scrubbingProgress = false);
+progressSlider.addEventListener('touchend', () => scrubbingProgress = false);
 
-// Speed
 speedSlider.addEventListener('input', () => {
   const v = parseFloat(speedSlider.value);
   mv.timeScale = v;
@@ -535,22 +432,21 @@ document.getElementById('shadow').addEventListener('input', function() {
   document.getElementById('shadow-val').textContent = parseFloat(this.value).toFixed(1);
 });
 document.getElementById('tog-rotate').addEventListener('change', function() {
-  if (this.checked) { mv.setAttribute('auto-rotate',''); rotBadge.style.display=''; }
-  else { mv.removeAttribute('auto-rotate'); rotBadge.style.display='none'; }
+  if (this.checked) { mv.setAttribute('auto-rotate',''); document.getElementById('rot-badge').style.display=''; }
+  else { mv.removeAttribute('auto-rotate'); document.getElementById('rot-badge').style.display='none'; }
 });
 document.getElementById('tog-wire').addEventListener('change', function() {
-  // model-viewer doesn't expose wireframe natively; toggle via CSS filter as a visual hint
   mv.style.filter = this.checked ? 'invert(1) hue-rotate(180deg) saturate(0)' : '';
 });
 
-// ── Camera helpers ────────────────────────────────────────────
+// ── Camera ────────────────────────────────────────────────────
 function resetCamera() { mv.cameraOrbit = 'auto auto auto'; mv.fieldOfView = 'auto'; }
 function setView(v) {
   const views = { front:'0deg 90deg auto', top:'0deg 0deg auto', side:'90deg 90deg auto' };
   mv.cameraOrbit = views[v] || views.front;
 }
 
-// ── Panel collapse (desktop) ──────────────────────────────────
+// ── Panel collapse ─────────────────────────────────────────────
 document.getElementById('collapse-btn').addEventListener('click', () => {
   document.getElementById('panel-wrap').classList.toggle('collapsed');
 });
