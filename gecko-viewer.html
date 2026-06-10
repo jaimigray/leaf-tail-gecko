@@ -209,7 +209,7 @@ input[type=range]::-webkit-slider-thumb{
     </div>
     <div class="header-right">
       <div class="badge gold" id="anim-badge" style="display:none">▶ Playing</div>
-      <div class="badge accent" id="rot-badge">● Auto-rotating</div>
+      <div class="badge accent" id="rot-badge" style="display:none">● Auto-rotating</div>
     </div>
   </header>
 
@@ -219,8 +219,6 @@ input[type=range]::-webkit-slider-thumb{
         id="mv"
         src="leaf-tailed-gecko-compressed.glb"
         camera-controls
-        auto-rotate
-        rotation-per-second="20deg"
         shadow-intensity="1"
         environment-image="neutral"
         exposure="1"
@@ -277,7 +275,7 @@ input[type=range]::-webkit-slider-thumb{
           </div>
           <div class="tog-row">
             <span class="tog-label">Auto-rotate</span>
-            <label class="tog"><input type="checkbox" id="tog-rotate" checked><span class="tog-t"></span></label>
+            <label class="tog"><input type="checkbox" id="tog-rotate"><span class="tog-t"></span></label>
           </div>
           <div class="tog-row">
             <span class="tog-label">Wireframe</span>
