@@ -227,6 +227,7 @@ input[type=range]::-webkit-slider-thumb{
     <div class="mv-wrap" id="mv-wrap">
       <model-viewer
         id="mv"
+        src="leaf-tailed-gecko-compressed.glb"
         camera-controls
         auto-rotate
         rotation-per-second="20deg"
@@ -237,7 +238,7 @@ input[type=range]::-webkit-slider-thumb{
       ></model-viewer>
 
       <!-- Drop / load overlay -->
-      <div id="drop-overlay">
+      <div id="drop-overlay" class="hidden">
         <div class="drop-icon">🎬</div>
         <div class="drop-text">
           <strong>Drop a .glb file here</strong><br>
