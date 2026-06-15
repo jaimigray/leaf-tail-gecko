@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>Eastern Chipmunk · 3D Skeleton Viewer</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #0b0d0a;
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #84a760;
+  --accent2: #a8c47a;
+  --warm: #d4a76a;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);}
+
+#app{display:flex;flex-direction:column;height:100vh;}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:60px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  background:rgba(11,13,10,0.97);
+  backdrop-filter:blur(16px);
+}
+.header-left{display:flex;flex-direction:column;gap:3px;}
+.title{font-size:15px;font-weight:600;color:#fff;letter-spacing:-0.01em;}
+.subtitle{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+.badge{font-size:9px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:4px 10px;border-radius:100px;white-space:nowrap;}
+.badge.accent{border-color:rgba(132,167,96,0.4);color:var(--accent2);}
+
+.workspace{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+.mv-wrap{flex:1;position:relative;min-width:0;min-height:0;}
+model-viewer{
+  display:block;position:absolute;inset:0;width:100%;height:100%;
+  background-color:var(--bg);
+  --progress-bar-color:#84a760;
+  --progress-mask:#0b0d0a;
+}
+
+/* ── panel ── */
+.panel-wrap{
+  display:flex;flex-direction:row;flex-shrink:0;
+  transition:width 0.25s ease;
+  width:250px;
+}
+.panel-wrap.collapsed{width:32px;}
+
+.panel-collapse-btn{
+  width:32px;flex-shrink:0;
+  background:rgba(14,17,12,0.99);
+  border-left:1px solid var(--border);
+  border-right:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);font-size:11px;
+  transition:color 0.15s,background 0.15s;
+  writing-mode:vertical-rl;
+  user-select:none;
+}
+.panel-collapse-btn:hover{color:var(--accent2);background:rgba(132,167,96,0.05);}
+.panel-collapse-btn .arrow{transition:transform 0.25s;display:inline-block;writing-mode:horizontal-tb;}
+.panel-wrap.collapsed .panel-collapse-btn .arrow{transform:rotate(180deg);}
+
+.panel{
+  flex:1;min-width:0;
+  background:rgba(14,17,12,0.99);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  overflow-x:hidden;
+  transition:opacity 0.2s;
+}
+.panel-wrap.collapsed .panel{opacity:0;pointer-events:none;}
+.panel::-webkit-scrollbar{width:3px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);}
+
+.p-section{padding:14px 16px 12px;border-bottom:1px solid var(--border);}
+.p-label{
+  font-size:8px;font-family:var(--mono);letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.p-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* sliders */
+.ctrl{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ctrl-l{font-size:10px;color:var(--muted);flex-shrink:0;min-width:72px;line-height:1.3;}
+.ctrl-v{font-size:10px;font-family:var(--mono);color:var(--text);min-width:28px;text-align:right;flex-shrink:0;}
+input[type=range]{
+  flex:1;height:2px;appearance:none;
+  background:rgba(255,255,255,0.08);border-radius:2px;cursor:pointer;
+  min-width:0;
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:10px;height:10px;border-radius:50%;
+  background:var(--accent2);cursor:pointer;
+  box-shadow:0 0 6px rgba(132,167,96,0.6);
+}
+
+/* toggles */
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;}
+.tog-label{font-size:10px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tog{position:relative;width:30px;height:16px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-t{position:absolute;inset:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;cursor:pointer;transition:0.2s;}
+.tog input:checked+.tog-t{background:rgba(132,167,96,0.2);border-color:var(--accent2);}
+.tog-t::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:0.2s;}
+.tog input:checked+.tog-t::after{left:16px;background:var(--accent2);}
+
+/* material rows */
+.mat-block{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.mat-block:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.mat-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mat-name{font-size:11px;color:var(--text);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* camera buttons */
+.cam-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.cam-btn{padding:7px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.15s;text-align:center;}
+.cam-btn:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(132,167,96,0.05);}
+
+/* specimen info */
+.info-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:8px;}
+.info-k{font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;}
+.info-v{font-size:10px;color:var(--text);text-align:right;line-height:1.4;}
+.info-v a{color:var(--accent2);text-decoration:none;}
+.info-v a:hover{text-decoration:underline;}
+
+.loading-msg{font-size:11px;color:var(--muted);font-style:italic;padding:8px 0;}
+
+/* ── Mobile ── */
+@media(max-width:900px){
+  header{padding:0 14px;height:52px;}
+  .title{font-size:13px;}
+  .subtitle{font-size:9px;letter-spacing:0.08em;}
+  .badge:not(.accent){display:none;}
+
+  .workspace{flex-direction:column;}
+  .mv-wrap{flex:1;}
+
+  .panel-wrap{
+    display:block;
+    width:100% !important;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    z-index:10;
+  }
+  .panel-wrap.collapsed .panel{opacity:1;pointer-events:auto;}
+  .panel-collapse-btn{display:none;}
+
+  .panel{
+    width:100%;
+    flex-shrink:0;
+    border-left:none;
+    border-top:1px solid var(--border);
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.3s ease;
+  }
+  .panel.open{max-height:55vh;overflow-y:auto;}
+
+  input[type=range]{height:4px;}
+  input[type=range]::-webkit-slider-thumb{width:18px;height:18px;}
+  .tog{width:38px;height:20px;}
+  .tog-t::after{width:14px;height:14px;}
+  .tog input:checked+.tog-t::after{left:20px;}
+  .ctrl{margin-bottom:14px;}
+  .cam-btn{padding:12px 6px;font-size:10px;}
+
+  .panel-toggle{
+    display:flex;
+    align-items:center;justify-content:center;gap:6px;
+    width:100%;padding:10px;
+    background:rgba(14,17,12,0.99);
+    border:none;border-top:1px solid var(--border);
+    color:var(--muted);font-family:var(--mono);font-size:9px;
+    letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;
+    flex-shrink:0;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    z-index:11;
+  }
+  .panel-toggle:active{background:rgba(132,167,96,0.08);}
+  .panel-toggle-arrow{transition:transform 0.3s;}
+  .panel-toggle.open .panel-toggle-arrow{transform:rotate(180deg);}
+}
+
+.panel-toggle{display:none;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="title">Eastern Chipmunk <span style="font-style:italic;font-weight:300;color:var(--muted);font-size:13px;">Tamias striatus</span></div>
+      <div class="subtitle">3D Skeleton · Mammalogy</div>
+    </div>
+    <div class="header-right">
+      <div class="badge accent" id="rot-badge">● Auto-rotating</div>
+      <div class="badge">GLB Model</div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <div class="mv-wrap">
+      <model-viewer
+        id="mv"
+        src="flying-squirrel-skeleton.glb"
+        auto-rotate
+        camera-controls
+        exposure="0.6"
+        shadow-intensity="1"
+        shadow-softness="0.5"
+        tone-mapping="neutral"
+        style="--poster-color:#0b0d0a"
+      ></model-viewer>
+    </div>
+
+    <button class="panel-toggle" id="panel-toggle">
+      <span>Controls</span>
+      <span class="panel-toggle-arrow">▲</span>
+    </button>
+    <div class="panel-wrap" id="panel-wrap">
+      <div class="panel-collapse-btn" id="panel-collapse-btn">
+        <span class="arrow">◀</span>
+      </div>
+      <div class="panel" id="panel">
+
+        <div class="p-section">
+          <div class="p-label">Specimen</div>
+          <div class="info-row"><span class="info-k">Common name</span><span class="info-v">Eastern Chipmunk</span></div>
+          <div class="info-row"><span class="info-k">Species</span><span class="info-v" style="font-style:italic;">Tamias striatus</span></div>
+          <div class="info-row"><span class="info-k">Specimen</span><span class="info-v">YPM:MAM:014464</span></div>
+          <div class="info-row"><span class="info-k">Order</span><span class="info-v">Rodentia</span></div>
+          <div class="info-row"><span class="info-k">Family</span><span class="info-v">Sciuridae</span></div>
+          <div class="info-row"><span class="info-k">Model type</span><span class="info-v">Skeletal anatomy</span></div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-label">Lighting</div>
+          <div class="ctrl">
+            <span class="ctrl-l">Exposure</span>
+            <input type="range" id="s-exp" min="0.1" max="3" step="0.05" value="0.6">
+            <span class="ctrl-v" id="v-exp">0.6</span>
+          </div>
+          <div class="ctrl">
+            <span class="ctrl-l">Shadow</span>
+            <input type="range" id="s-shad" min="0" max="2" step="0.05" value="1">
+            <span class="ctrl-v" id="v-shad">1</span>
+          </div>
+          <div class="ctrl">
+            <span class="ctrl-l">Softness</span>
+            <input type="range" id="s-soft" min="0" max="1" step="0.05" value="0.5">
+            <span class="ctrl-v" id="v-soft">0.5</span>
+          </div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-label">Display</div>
+          <div class="tog-row">
+            <span class="tog-label">Auto-rotate</span>
+            <label class="tog"><input type="checkbox" id="t-rot" checked><span class="tog-t"></span></label>
+          </div>
+          <div class="tog-row">
+            <span class="tog-label">Wireframe</span>
+            <label class="tog"><input type="checkbox" id="t-wire"><span class="tog-t"></span></label>
+          </div>
+        </div>
+
+        <div class="p-section" id="mat-section">
+          <div class="p-label">Elements</div>
+          <div class="loading-msg" id="mat-loading">Loading model…</div>
+          <div id="mat-list"></div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-label">Camera</div>
+          <div class="cam-btns">
+            <button class="cam-btn" id="cb-front">Front</button>
+            <button class="cam-btn" id="cb-side">Side</button>
+            <button class="cam-btn" id="cb-top">Top</button>
+            <button class="cam-btn" id="cb-reset">Reset</button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /panel-wrap -->
+  </div>
+</div>
+
+<script>
+const PALETTE = [
+  '#d4a76a','#a8c47a','#e8c87a','#84a760','#c4a460',
+  '#b8d4a0','#e8b060','#9ab870','#d4c080','#a0c490',
+];
+
+const MESH_COLORS = {
+  'skull':            '#FF6F61',
+  'hyoid_apparatus':  '#00708F',
+  'vertebrae':        '#1BE7FF',
+  'scalpulae':        '#5F4B8B',
+  'humerus':          '#F7CAC9',
+  'ulna':             '#91A8D0',
+  'radius':           '#964F4C',
+  'carpals':          '#AD5E99',
+  'metacarpals':      '#009473',
+  'phalanges':        '#DD4124',
+  'baculum':          '#EF476F',
+  'ribs':             '#FFE267',
+  'sternum':          '#BE7C4D',
+  'clavicles':        '#88B04B',
+  'pelvis':           '#5F4B8B',
+  'femur':            '#F7CAC9',
+  'TIBIOFIBULA':      '#91A8D0',
+  'tarsals':          '#AD5E99',
+  'metatarsals':      '#009473',
+  'phalanges-toe':    '#009473',
+  'patella':          '#0C3188',
+};
+
+const mv = document.getElementById('mv');
+
+function sizeMV() {
+  const wrap = mv.parentElement;
+  const r = wrap.getBoundingClientRect();
+  mv.style.setProperty('width',  r.width  + 'px', 'important');
+  mv.style.setProperty('height', r.height + 'px', 'important');
+}
+mv.addEventListener('load', sizeMV);
+window.addEventListener('resize', sizeMV);
+
+// Lighting sliders
+function sl(id, vid, cb) {
+  const el = document.getElementById(id), vl = document.getElementById(vid);
+  el.addEventListener('input', () => {
+    const v = parseFloat(el.value);
+    cb(v);
+    vl.textContent = v.toFixed(2).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  });
+}
+sl('s-exp',  'v-exp',  v => mv.exposure = v);
+sl('s-shad', 'v-shad', v => mv.shadowIntensity = v);
+sl('s-soft', 'v-soft', v => mv.shadowSoftness = v);
+
+// Auto-rotate toggle
+document.getElementById('t-rot').addEventListener('change', e => {
+  e.target.checked ? mv.setAttribute('auto-rotate','') : mv.removeAttribute('auto-rotate');
+  document.getElementById('rot-badge').textContent = e.target.checked ? '● Auto-rotating' : '○ Paused';
+});
+mv.addEventListener('camera-change', () => {
+  if (mv.getAttribute('auto-rotate') === null) {
+    document.getElementById('t-rot').checked = false;
+    document.getElementById('rot-badge').textContent = '○ Paused';
+  }
+});
+
+// Camera presets
+document.getElementById('cb-front').addEventListener('click', () => mv.cameraOrbit = '0deg 90deg auto');
+document.getElementById('cb-side').addEventListener('click',  () => mv.cameraOrbit = '90deg 90deg auto');
+document.getElementById('cb-top').addEventListener('click',   () => mv.cameraOrbit = '0deg 0deg auto');
+document.getElementById('cb-reset').addEventListener('click', () => {
+  mv.cameraOrbit = 'auto auto auto';
+  mv.fieldOfView = 'auto';
+});
+
+// Three.js scene access
+function getThreeScene() {
+  const sym = Object.getOwnPropertySymbols(mv).find(s => {
+    const k = String(s);
+    return k.includes('scene') || k.includes('Scene');
+  });
+  return sym ? mv[sym] : null;
+}
+
+function nudgeRender() {
+  const e = mv.exposure;
+  mv.exposure = e + 1e-4;
+  requestAnimationFrame(() => { mv.exposure = e; });
+}
+
+function applyAssignedColors() {
+  const scene = getThreeScene();
+  if (!scene) return;
+  scene.traverse(obj => {
+    if (!obj.isMesh) return;
+    const hex = MESH_COLORS[obj.name];
+    if (!hex) return;
+    const m = Array.isArray(obj.material) ? obj.material[0] : obj.material;
+    if (!m || !m.color) return;
+    m.color.set(hex);
+    m.needsUpdate = true;
+  });
+  nudgeRender();
+}
+
+// Element controls
+mv.addEventListener('load', buildElementControls);
+const meshState = [];
+
+function prettifyName(s) {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function buildElementControls() {
+  applyAssignedColors();
+  const list    = document.getElementById('mat-list');
+  const loading = document.getElementById('mat-loading');
+  loading.style.display = 'none';
+  list.innerHTML = '';
+  meshState.length = 0;
+
+  const scene = getThreeScene();
+  if (!scene) {
+    loading.style.display = '';
+    loading.textContent = 'Could not access scene graph.';
+    return;
+  }
+
+  // Collect named groups and meshes
+  const groups = [];
+  let contentGroup = null;
+  scene.traverse(obj => {
+    if (contentGroup) return;
+    if (obj === scene || obj.type !== 'Group' || !obj.name) return;
+    const namedChildren = obj.children.filter(c => c.name);
+    if (namedChildren.length >= 2) contentGroup = obj;
+  });
+
+  if (contentGroup) {
+    contentGroup.children.filter(c => c.name).forEach(child => {
+      groups.push({ name: child.name, objects: [child] });
+    });
+  } else {
+    const seen = new Set();
+    scene.traverse(obj => {
+      if (!obj.isMesh || !obj.name || seen.has(obj.name)) return;
+      seen.add(obj.name);
+      groups.push({ name: obj.name, objects: [obj] });
+    });
+  }
+
+  if (groups.length === 0) {
+    loading.style.display = '';
+    loading.textContent = 'No elements found in model.';
+    return;
+  }
+
+  groups.forEach((group, i) => {
+    const color = PALETTE[i % PALETTE.length];
+    meshState.push({ objects: group.objects, visible: true, opacity: 1 });
+
+    const slug = `el-${i}`;
+    const label = prettifyName(group.name);
+    const block = document.createElement('div');
+    block.className = 'mat-block';
+    block.innerHTML = `
+      <div class="mat-header">
+        <div class="mat-dot" style="background:${color};box-shadow:0 0 6px ${color}66;"></div>
+        <span class="mat-name" title="${label}">${label}</span>
+        <label class="tog">
+          <input type="checkbox" id="${slug}-vis" checked>
+          <span class="tog-t"></span>
+        </label>
+      </div>
+      <div class="ctrl">
+        <span class="ctrl-l" style="min-width:52px;">Opacity</span>
+        <input type="range" id="${slug}-op" min="0" max="1" step="0.01" value="1">
+        <span class="ctrl-v" id="${slug}-opv">1</span>
+      </div>
+    `;
+    list.appendChild(block);
+
+    block.querySelector(`#${slug}-op`).addEventListener('input', function() {
+      const v = parseFloat(this.value);
+      block.querySelector(`#${slug}-opv`).textContent = v.toFixed(2).replace(/\.?0+$/, '') || '0';
+      meshState[i].opacity = v;
+      applyElement(i);
+    });
+
+    block.querySelector(`#${slug}-vis`).addEventListener('change', function() {
+      meshState[i].visible = this.checked;
+      applyElement(i);
+    });
+  });
+}
+
+function applyElement(i) {
+  const { objects, visible, opacity } = meshState[i];
+  objects.forEach(obj => {
+    obj.visible = visible;
+    obj.traverse(child => {
+      if (!child.isMesh) return;
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      mats.forEach(m => {
+        m.transparent = opacity < 1;
+        m.opacity = opacity;
+        m.needsUpdate = true;
+      });
+    });
+  });
+  nudgeRender();
+}
+
+// Desktop panel collapse
+document.getElementById('panel-collapse-btn').addEventListener('click', () => {
+  const wrap = document.getElementById('panel-wrap');
+  wrap.classList.toggle('collapsed');
+  wrap.addEventListener('transitionend', sizeMV, { once: true });
+});
+
+// Mobile panel toggle
+document.getElementById('panel-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('panel');
+  const btn = document.getElementById('panel-toggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+});
+
+// Wireframe toggle
+document.getElementById('t-wire').addEventListener('change', e => {
+  const enabled = e.target.checked;
+  const scene = getThreeScene();
+  if (!scene) return;
+  scene.traverse(obj => {
+    if (!obj.isMesh || !obj.material) return;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    mats.forEach(m => { m.wireframe = enabled; });
+  });
+  nudgeRender();
+});
+</script>
+</body>
+</html>
