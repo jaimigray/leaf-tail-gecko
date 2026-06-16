@@ -367,8 +367,8 @@ mv.addEventListener('camera-change', () => {
 });
 
 // Camera presets
-document.getElementById('cb-front').addEventListener('click', () => mv.cameraOrbit = '270deg 90deg auto');
-document.getElementById('cb-side').addEventListener('click',  () => mv.cameraOrbit = '0deg 90deg auto');
+document.getElementById('cb-front').addEventListener('click', () => mv.cameraOrbit = '180deg 90deg auto');
+document.getElementById('cb-side').addEventListener('click',  () => mv.cameraOrbit = '270deg 90deg auto');
 document.getElementById('cb-top').addEventListener('click',   () => mv.cameraOrbit = '0deg 0deg auto');
 document.getElementById('cb-reset').addEventListener('click', () => {
   mv.cameraOrbit = 'auto auto auto';
