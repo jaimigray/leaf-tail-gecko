@@ -209,7 +209,7 @@ input[type=range]::-webkit-slider-thumb{
       <div class="subtitle">3D Skeleton · Mammalogy</div>
     </div>
     <div class="header-right">
-      <div class="badge accent" id="rot-badge">● Auto-rotating</div>
+      <div class="badge accent" id="rot-badge">○ Paused</div>
       <div class="badge">GLB Model</div>
     </div>
   </header>
@@ -219,7 +219,6 @@ input[type=range]::-webkit-slider-thumb{
       <model-viewer
         id="mv"
         src="flying-squirrel-skeleton.glb"
-        auto-rotate
         camera-controls
         exposure="0.6"
         shadow-intensity="1"
@@ -272,7 +271,7 @@ input[type=range]::-webkit-slider-thumb{
           <div class="p-label">Display</div>
           <div class="tog-row">
             <span class="tog-label">Auto-rotate</span>
-            <label class="tog"><input type="checkbox" id="t-rot" checked><span class="tog-t"></span></label>
+            <label class="tog"><input type="checkbox" id="t-rot"><span class="tog-t"></span></label>
           </div>
           <div class="tog-row">
             <span class="tog-label">Wireframe</span>
