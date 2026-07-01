@@ -477,7 +477,21 @@ function buildElementControls() {
   }
 
   groups.forEach((group, i) => {
-    const color = MESH_COLORS[group.name] || PALETTE[i % PALETTE.length];
+    // Find the matching MESH_COLORS entry by checking group name, child names, and case-insensitively
+    let color = PALETTE[i % PALETTE.length];
+    const mcKeys = Object.keys(MESH_COLORS);
+    const findColor = name => {
+      if (MESH_COLORS[name]) return MESH_COLORS[name];
+      const lc = name.toLowerCase();
+      const k = mcKeys.find(k => k.toLowerCase() === lc);
+      return k ? MESH_COLORS[k] : null;
+    };
+    const resolveColor = obj => {
+      const c = findColor(obj.name); if (c) return c;
+      for (const child of (obj.children || [])) { const c2 = resolveColor(child); if (c2) return c2; }
+      return null;
+    };
+    for (const obj of group.objects) { const c = resolveColor(obj); if (c) { color = c; break; } }
     meshState.push({ objects: group.objects, visible: true, opacity: 1 });
 
     const slug = `el-${i}`;
