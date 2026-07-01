@@ -477,13 +477,14 @@ function buildElementControls() {
   }
 
   groups.forEach((group, i) => {
-    // Find the matching MESH_COLORS entry by checking group name, child names, and case-insensitively
+    // Find the matching MESH_COLORS entry, normalizing name variants
     let color = PALETTE[i % PALETTE.length];
     const mcKeys = Object.keys(MESH_COLORS);
+    const normalize = n => n.replace(/\.\d+$/, '').replace(/ /g, '_').toLowerCase();
     const findColor = name => {
       if (MESH_COLORS[name]) return MESH_COLORS[name];
-      const lc = name.toLowerCase();
-      const k = mcKeys.find(k => k.toLowerCase() === lc);
+      const norm = normalize(name);
+      const k = mcKeys.find(k => normalize(k) === norm);
       return k ? MESH_COLORS[k] : null;
     };
     const resolveColor = obj => {
