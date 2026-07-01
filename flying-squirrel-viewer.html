@@ -477,7 +477,7 @@ function buildElementControls() {
   }
 
   groups.forEach((group, i) => {
-    const color = PALETTE[i % PALETTE.length];
+    const color = MESH_COLORS[group.name] || PALETTE[i % PALETTE.length];
     meshState.push({ objects: group.objects, visible: true, opacity: 1 });
 
     const slug = `el-${i}`;
