@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>Sea Urchin · 3D Specimen Viewer</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #090c10;
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #7c3aed;
+  --accent2: #a78bfa;
+  --teal: #14b8a6;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);}
+
+#app{display:flex;flex-direction:column;height:100vh;}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:60px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  background:rgba(9,12,16,0.97);
+  backdrop-filter:blur(16px);
+}
+.header-left{display:flex;flex-direction:column;gap:3px;}
+.title{font-size:15px;font-weight:600;color:#fff;letter-spacing:-0.01em;}
+.subtitle{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+.badge{font-size:9px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:4px 10px;border-radius:100px;white-space:nowrap;}
+.badge.accent{border-color:rgba(124,58,237,0.4);color:var(--accent2);}
+
+.workspace{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+.mv-wrap{flex:1;position:relative;min-width:0;min-height:0;}
+model-viewer{
+  display:block;position:absolute;inset:0;width:100%;height:100%;
+  background-color:var(--bg);
+  --progress-bar-color:#7c3aed;
+  --progress-mask:#090c10;
+}
+
+/* ── panel ── */
+.panel-wrap{
+  display:flex;flex-direction:row;flex-shrink:0;
+  transition:width 0.25s ease;
+  width:250px;
+}
+.panel-wrap.collapsed{width:32px;}
+
+.panel-collapse-btn{
+  width:32px;flex-shrink:0;
+  background:rgba(14,17,26,0.99);
+  border-left:1px solid var(--border);
+  border-right:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);font-size:11px;
+  transition:color 0.15s,background 0.15s;
+  writing-mode:vertical-rl;
+  gap:0;
+  user-select:none;
+}
+.panel-collapse-btn:hover{color:var(--accent2);background:rgba(124,58,237,0.05);}
+.panel-collapse-btn .arrow{transition:transform 0.25s;display:inline-block;writing-mode:horizontal-tb;}
+.panel-wrap.collapsed .panel-collapse-btn .arrow{transform:rotate(180deg);}
+
+.panel{
+  flex:1;min-width:0;
+  background:rgba(14,17,26,0.99);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  overflow-x:hidden;
+  transition:opacity 0.2s;
+}
+.panel-wrap.collapsed .panel{opacity:0;pointer-events:none;}
+.panel::-webkit-scrollbar{width:3px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);}
+
+.p-section{padding:14px 16px 12px;border-bottom:1px solid var(--border);}
+.p-label{
+  font-size:8px;font-family:var(--mono);letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.p-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* sliders */
+.ctrl{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ctrl-l{font-size:10px;color:var(--muted);flex-shrink:0;min-width:72px;line-height:1.3;}
+.ctrl-v{font-size:10px;font-family:var(--mono);color:var(--text);min-width:28px;text-align:right;flex-shrink:0;}
+input[type=range]{
+  flex:1;height:2px;appearance:none;
+  background:rgba(255,255,255,0.08);border-radius:2px;cursor:pointer;
+  min-width:0;
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:10px;height:10px;border-radius:50%;
+  background:var(--accent2);cursor:pointer;
+  box-shadow:0 0 6px rgba(124,58,237,0.6);
+}
+
+/* toggles */
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;}
+.tog-label{font-size:10px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tog{position:relative;width:30px;height:16px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-t{position:absolute;inset:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;cursor:pointer;transition:0.2s;}
+.tog input:checked+.tog-t{background:rgba(124,58,237,0.2);border-color:var(--accent2);}
+.tog-t::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:0.2s;}
+.tog input:checked+.tog-t::after{left:16px;background:var(--accent2);}
+
+/* material rows */
+.mat-block{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.mat-block:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.mat-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mat-name{font-size:11px;color:var(--text);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* camera buttons */
+.cam-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.cam-btn{padding:7px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.15s;text-align:center;}
+.cam-btn:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(124,58,237,0.05);}
+
+.loading-msg{font-size:11px;color:var(--muted);font-style:italic;padding:8px 0;}
+
+/* ── Mobile ── */
+@media(max-width:600px){
+  header{padding:0 14px;height:52px;}
+  .title{font-size:13px;}
+  .subtitle{font-size:9px;letter-spacing:0.08em;}
+  .badge:not(.accent){display:none;}
+
+  .workspace{flex-direction:column;}
+
+  /* Model viewer takes all space except header */
+  .mv-wrap{flex:1;}
+
+  /* Panel sits as a bottom sheet */
+  .panel{
+    width:100%;
+    flex-shrink:0;
+    border-left:none;
+    border-top:1px solid var(--border);
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.3s ease;
+  }
+  .panel.open{max-height:55vh;overflow-y:auto;}
+
+  /* Larger touch targets */
+  input[type=range]{height:4px;}
+  input[type=range]::-webkit-slider-thumb{width:18px;height:18px;}
+  .tog{width:38px;height:20px;}
+  .tog-t::after{width:14px;height:14px;}
+  .tog input:checked+.tog-t::after{left:20px;}
+  .ctrl{margin-bottom:14px;}
+  .cam-btn{padding:12px 6px;font-size:10px;}
+
+  /* Panel toggle button */
+  .panel-toggle{
+    display:flex;
+    align-items:center;justify-content:center;gap:6px;
+    width:100%;padding:10px;
+    background:rgba(14,17,26,0.99);
+    border:none;border-top:1px solid var(--border);
+    color:var(--muted);font-family:var(--mono);font-size:9px;
+    letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;
+    flex-shrink:0;
+  }
+  .panel-toggle:active{background:rgba(124,58,237,0.08);}
+  .panel-toggle-arrow{transition:transform 0.3s;}
+  .panel-toggle.open .panel-toggle-arrow{transform:rotate(180deg);}
+}
+
+/* Hide toggle button on desktop */
+.panel-toggle{display:none;}
+.credit-banner {
+  background: rgba(0,0,0,0.35);
+  color: #ccc;
+  font-size: 11px;
+  text-align: center;
+  padding: 5px 12px;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.credit-banner a { color: #9ecfef; text-decoration: none; }
+.credit-banner a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="credit-banner">Created by <a href="https://graysvertebrateanatomy.com" target="_blank" rel="noopener">Dr. Jaimi A. Gray</a>, <a href="https://www.ctlab.geo.utexas.edu/" target="_blank" rel="noopener">University of Texas High-Resolution X-ray Computed Tomography Facility</a></div>
+  <header>
+    <div class="header-left">
+      <div class="title">Pencil urchin <span style="font-style:italic;font-weight:300;color:var(--muted);font-size:13px;">Stylacidaris affinis</span></div>
+      <div class="subtitle">3D CT Specimen · Marine Biology · FWC:085</div>
+    </div>
+    <div class="header-right">
+      <div class="badge accent" id="rot-badge">● Auto-rotating</div>
+      <div class="badge">GLB Model</div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <div class="mv-wrap">
+      <model-viewer
+        id="mv"
+        src="urchin-draco.glb"
+        draco-decoder-path="https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+        auto-rotate
+        camera-controls
+        exposure="0.4"
+        shadow-intensity="1"
+        shadow-softness="0.5"
+        tone-mapping="neutral"
+        style="--poster-color:#090c10"
+      ></model-viewer>
+    </div>
+
+    <button class="panel-toggle" id="panel-toggle">
+      <span>Controls</span>
+      <span class="panel-toggle-arrow">▲</span>
+    </button>
+    <div class="panel-wrap" id="panel-wrap">
+      <div class="panel-collapse-btn" id="panel-collapse-btn">
+        <span class="arrow">◀</span>
+      </div>
+    <div class="panel" id="panel">
+
+      <div class="p-section">
+        <div class="p-label">Lighting</div>
+        <div class="ctrl">
+          <span class="ctrl-l">Exposure</span>
+          <input type="range" id="s-exp" min="0.1" max="3" step="0.05" value="0.4">
+          <span class="ctrl-v" id="v-exp">0.4</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-l">Shadow</span>
+          <input type="range" id="s-shad" min="0" max="2" step="0.05" value="1">
+          <span class="ctrl-v" id="v-shad">1</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-l">Softness</span>
+          <input type="range" id="s-soft" min="0" max="1" step="0.05" value="0.5">
+          <span class="ctrl-v" id="v-soft">0.5</span>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Display</div>
+        <div class="tog-row">
+          <span class="tog-label">Auto-rotate</span>
+          <label class="tog"><input type="checkbox" id="t-rot" checked><span class="tog-t"></span></label>
+        </div>
+        <div class="tog-row">
+          <span class="tog-label">Wireframe</span>
+          <label class="tog"><input type="checkbox" id="t-wire"><span class="tog-t"></span></label>
+        </div>
+      </div>
+
+      <div class="p-section" id="mat-section">
+        <div class="p-label">Elements</div>
+        <div class="loading-msg" id="mat-loading">Loading model…</div>
+        <div id="mat-list"></div>
+      </div>
+
+<div class="p-section">
+        <div class="p-label">Camera</div>
+        <div class="cam-btns">
+          <button class="cam-btn" id="cb-front">Front</button>
+          <button class="cam-btn" id="cb-side">Side</button>
+          <button class="cam-btn" id="cb-top">Top</button>
+          <button class="cam-btn" id="cb-reset">Reset</button>
+        </div>
+      </div>
+
+    </div>
+    </div><!-- /panel-wrap -->
+  </div>
+</div>
+
+<script>
+// Dot colors per element (order matches contentGroup.children: aristotles_lantern, digestive_tract, gonad, compass, whole_urchin)
+// Gonad gets the first of its 5 segment colors as the dot.
+const ELEMENT_COLORS = {
+  'aristotles_lantern': '#B7C4FF',
+  'digestive_tract':    '#8DAA7E',
+  'gonad':              '#560BAD',
+  'compass':            '#80ED99',
+  'whole_urchin':       '#E7E7E7',
+};
+const PALETTE = [
+  '#a78bfa','#14b8a6','#f472b6','#fb923c','#60a5fa',
+  '#34d399','#fbbf24','#e879f9','#38bdf8','#4ade80',
+];
+
+const mv = document.getElementById('mv');
+
+// Size fix: model-viewer can reset inline styles on init
+function sizeMV() {
+  const wrap = mv.parentElement;
+  const r = wrap.getBoundingClientRect();
+  mv.style.setProperty('width',  r.width  + 'px', 'important');
+  mv.style.setProperty('height', r.height + 'px', 'important');
+}
+mv.addEventListener('load', sizeMV);
+window.addEventListener('resize', sizeMV);
+
+// Lighting sliders
+function sl(id, vid, cb) {
+  const el = document.getElementById(id), vl = document.getElementById(vid);
+  el.addEventListener('input', () => {
+    const v = parseFloat(el.value);
+    cb(v);
+    vl.textContent = v.toFixed(2).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  });
+}
+sl('s-exp',  'v-exp',  v => mv.exposure = v);
+sl('s-shad', 'v-shad', v => mv.shadowIntensity = v);
+sl('s-soft', 'v-soft', v => mv.shadowSoftness = v);
+
+// Auto-rotate toggle
+document.getElementById('t-rot').addEventListener('change', e => {
+  e.target.checked ? mv.setAttribute('auto-rotate','') : mv.removeAttribute('auto-rotate');
+  document.getElementById('rot-badge').textContent = e.target.checked ? '● Auto-rotating' : '○ Paused';
+});
+mv.addEventListener('camera-change', () => {
+  if (mv.getAttribute('auto-rotate') === null) {
+    document.getElementById('t-rot').checked = false;
+    document.getElementById('rot-badge').textContent = '○ Paused';
+  }
+});
+
+// Camera presets
+document.getElementById('cb-front').addEventListener('click', () => mv.cameraOrbit = '0deg 90deg auto');
+document.getElementById('cb-side').addEventListener('click',  () => mv.cameraOrbit = '90deg 90deg auto');
+document.getElementById('cb-top').addEventListener('click',   () => mv.cameraOrbit = '0deg 0deg auto');
+document.getElementById('cb-reset').addEventListener('click', () => {
+  mv.cameraOrbit = 'auto auto auto';
+  mv.fieldOfView = 'auto';
+  centerOnDigestiveTract();
+});
+
+// ── Scene graph access ──
+// model-viewer keeps its Three.js scene on a private Symbol field.
+// We find it by searching the element's own symbols after load.
+function getThreeScene() {
+  const sym = Object.getOwnPropertySymbols(mv).find(s => {
+    const k = String(s);
+    return k.includes('scene') || k.includes('Scene');
+  });
+  return sym ? mv[sym] : null;
+}
+
+// Force model-viewer to re-render one frame after we mutate Three.js objects directly.
+// A tiny exposure nudge is the most reliable cross-version trigger.
+function nudgeRender() {
+  const e = mv.exposure;
+  mv.exposure = e + 1e-4;
+  requestAnimationFrame(() => { mv.exposure = e; });
+}
+
+// ── Element controls (mesh-level, built after model loads) ──
+mv.addEventListener('load', buildElementControls);
+
+// meshState entries: { objects: [Three.js Object3D…], visible, opacity }
+const meshState = [];
+
+const ELEMENT_ORDER = ['whole_urchin','aristotles_lantern','digestive_tract','gonad','compass'];
+
+function prettifyName(s) {
+  const str = s.replace(/_/g, ' ').replace(/\baristotles\b/i, "Aristotle's").toLowerCase();
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Assigned colors per mesh name: [hexColor, opacity]
+const MESH_COLORS = {
+  'aristotles_lantern': ['#B7C4FF', 1.0],
+  'compass':            ['#80ED99', 1.0],
+  'digestive_tract':    ['#8DAA7E', 1.0],
+  'whole_urchin':       ['#E7E7E7', 0.10],
+  'Segment_3':          ['#560BAD', 1.0],
+  'Segment_3_1':        ['#B5179E', 1.0],
+  'Segment_3_2':        ['#7209B7', 1.0],
+  'Segment_3_3':        ['#3F37C9', 1.0],
+  'Segment_3_4':        ['#4895EF', 1.0],
+};
+
+function applyAssignedColors() {
+  const scene = getThreeScene();
+  if (!scene) return;
+  scene.traverse(obj => {
+    if (!obj.isMesh) return;
+    const entry = MESH_COLORS[obj.name];
+    if (!entry) return;
+    const [hex, opacity] = entry;
+    const m = Array.isArray(obj.material) ? obj.material[0] : obj.material;
+    if (!m || !m.color) return;
+    m.color.set(hex);
+    m.opacity = opacity;
+    m.transparent = opacity < 1;
+    m.needsUpdate = true;
+  });
+  nudgeRender();
+}
+
+
+function buildElementControls() {
+  applyAssignedColors();
+  requestAnimationFrame(setRotationCenter);
+  const list    = document.getElementById('mat-list');
+  const loading = document.getElementById('mat-loading');
+  loading.style.display = 'none';
+  list.innerHTML = '';
+  meshState.length = 0;
+
+  const scene = getThreeScene();
+  if (!scene) {
+    loading.style.display = '';
+    loading.textContent = 'Could not access scene graph.';
+    return;
+  }
+
+  // Find the content group — the first named Group below the scene root
+  // that has named mesh/group children (the "Scene" group in the urchin model).
+  let contentGroup = null;
+  scene.traverse(obj => {
+    if (contentGroup) return;
+    if (obj === scene || obj.type !== 'Group' || !obj.name) return;
+    const namedChildren = obj.children.filter(c => c.name);
+    if (namedChildren.length >= 2) contentGroup = obj;
+  });
+
+  const groups = [];
+
+  if (contentGroup) {
+    // Each direct named child of the content group is one element, sorted by ELEMENT_ORDER
+    const children = contentGroup.children.filter(c => c.name);
+    children.sort((a, b) => {
+      const ai = ELEMENT_ORDER.indexOf(a.name), bi = ELEMENT_ORDER.indexOf(b.name);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+    children.forEach(child => groups.push({ name: child.name, objects: [child] }));
+  } else {
+    // Fallback: all named meshes individually
+    scene.traverse(obj => {
+      if (!obj.isMesh || !obj.name) return;
+      groups.push({ name: obj.name, objects: [obj] });
+    });
+  }
+
+  if (groups.length === 0) {
+    loading.style.display = '';
+    loading.textContent = 'No elements found in model.';
+    return;
+  }
+
+  groups.forEach((group, i) => {
+    const color = ELEMENT_COLORS[group.name] || PALETTE[i % PALETTE.length];
+    // Whole urchin starts at 10% opacity to match the assigned alpha
+    const initOpacity = group.name === 'whole_urchin' ? 0.10 : 1;
+    meshState.push({ objects: group.objects, visible: true, opacity: initOpacity });
+
+    const slug = `el-${i}`;
+    const label = prettifyName(group.name);
+    const opDisplay = initOpacity === 1 ? '1' : initOpacity.toFixed(2);
+    const block = document.createElement('div');
+    block.className = 'mat-block';
+    block.innerHTML = `
+      <div class="mat-header">
+        <div class="mat-dot" style="background:${color};box-shadow:0 0 6px ${color}66;"></div>
+        <span class="mat-name" title="${label}">${label}</span>
+        <label class="tog">
+          <input type="checkbox" id="${slug}-vis" checked>
+          <span class="tog-t"></span>
+        </label>
+      </div>
+      <div class="ctrl">
+        <span class="ctrl-l" style="min-width:52px;">Opacity</span>
+        <input type="range" id="${slug}-op" min="0" max="1" step="0.01" value="${initOpacity}">
+        <span class="ctrl-v" id="${slug}-opv">${opDisplay}</span>
+      </div>
+    `;
+    list.appendChild(block);
+
+    const opSlider = block.querySelector(`#${slug}-op`);
+    const opVal    = block.querySelector(`#${slug}-opv`);
+    opSlider.addEventListener('input', () => {
+      const v = parseFloat(opSlider.value);
+      opVal.textContent = v.toFixed(2).replace(/\.?0+$/, '') || '0';
+      meshState[i].opacity = v;
+      applyElement(i);
+    });
+
+    const visChk = block.querySelector(`#${slug}-vis`);
+    visChk.addEventListener('change', () => {
+      meshState[i].visible = visChk.checked;
+      applyElement(i);
+    });
+  });
+}
+
+function applyElement(i) {
+  const { objects, visible, opacity } = meshState[i];
+  objects.forEach(obj => {
+    obj.visible = visible;
+    obj.traverse(child => {
+      if (!child.isMesh) return;
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      mats.forEach(m => {
+        m.transparent = opacity < 1;
+        m.opacity = opacity;
+        m.needsUpdate = true;
+      });
+    });
+  });
+  nudgeRender();
+}
+
+function setRotationCenter() {
+  mv.cameraTarget = '0% 31% 13.5%';
+}
+
+// Desktop panel collapse
+document.getElementById('panel-collapse-btn').addEventListener('click', () => {
+  const wrap = document.getElementById('panel-wrap');
+  wrap.classList.toggle('collapsed');
+  wrap.addEventListener('transitionend', sizeMV, { once: true });
+});
+
+// Mobile panel toggle
+document.getElementById('panel-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('panel');
+  const btn = document.getElementById('panel-toggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+});
+
+// Wireframe toggle
+document.getElementById('t-wire').addEventListener('change', e => {
+  const enabled = e.target.checked;
+  const scene = getThreeScene();
+  if (!scene) return;
+  scene.traverse(obj => {
+    if (!obj.isMesh || !obj.material) return;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    mats.forEach(m => { m.wireframe = enabled; });
+  });
+  nudgeRender();
+});
+</script>
+</body>
+</html>

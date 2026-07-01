@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>OsteoCentric Bone Fastener Comparison</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #0c0f14;
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #f97316;
+  --accent2: #fb923c;
+  --blue: #3b82f6;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);}
+
+#app{display:flex;flex-direction:column;height:100vh;}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:60px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  background:rgba(12,15,20,0.95);
+  backdrop-filter:blur(16px);
+}
+.header-left{display:flex;flex-direction:column;gap:3px;}
+.title{font-size:15px;font-weight:600;color:#fff;letter-spacing:-0.01em;}
+.subtitle{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+.header-right{display:flex;align-items:center;gap:12px;}
+.badge{font-size:9px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:4px 10px;border-radius:100px;}
+.badge.accent{border-color:rgba(249,115,22,0.35);color:var(--accent);}
+
+.workspace{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+.mv-wrap{flex:1;position:relative;min-width:0;min-height:0;}
+model-viewer {
+  display:block;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  background-color: #0c0f14;
+  --progress-bar-color: #f97316;
+  --progress-mask: #0c0f14;
+}
+
+.panel{width:240px;flex-shrink:0;background:rgba(17,21,32,0.98);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.panel::-webkit-scrollbar{width:3px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);}
+
+.p-section{padding:16px 16px 12px;border-bottom:1px solid var(--border);}
+.p-label{font-size:8px;font-family:var(--mono);letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.p-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.legend-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.legend-dot.osteocentric{background:var(--accent);box-shadow:0 0 8px rgba(249,115,22,0.5);}
+.legend-dot.standard{background:var(--blue);box-shadow:0 0 8px rgba(59,130,246,0.4);}
+.legend-dot.bone{background:#d4a06a;box-shadow:0 0 6px rgba(212,160,106,0.3);}
+.legend-text{font-size:11px;line-height:1.5;color:var(--muted);}
+.legend-text strong{color:var(--text);font-weight:500;display:block;margin-bottom:2px;}
+
+.ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.ctrl-l{font-size:10px;color:var(--muted);flex-shrink:0;min-width:72px;}
+.ctrl-v{font-size:10px;font-family:var(--mono);color:var(--text);min-width:30px;text-align:right;}
+input[type=range]{flex:1;height:2px;appearance:none;background:rgba(255,255,255,0.08);border-radius:2px;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:10px;height:10px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 6px rgba(249,115,22,0.5);}
+
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.tog{position:relative;width:30px;height:16px;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-t{position:absolute;inset:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;cursor:pointer;transition:0.2s;}
+.tog input:checked+.tog-t{background:rgba(249,115,22,0.2);border-color:var(--accent);}
+.tog-t::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:0.2s;}
+.tog input:checked+.tog-t::after{left:16px;background:var(--accent);}
+
+.cam-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.cam-btn{padding:7px 6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.15s;text-align:center;}
+.cam-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(249,115,22,0.05);}
+
+.callout{margin:16px;padding:12px 14px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.15);border-radius:6px;}
+.callout-label{font-size:7px;font-family:var(--mono);letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);opacity:0.8;margin-bottom:7px;}
+.callout-text{font-size:11px;line-height:1.55;color:var(--muted);}
+.callout-text strong{color:var(--text);font-weight:500;}
+.credit-banner {
+  background: rgba(0,0,0,0.35);
+  color: #ccc;
+  font-size: 11px;
+  text-align: center;
+  padding: 5px 12px;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.credit-banner a { color: #9ecfef; text-decoration: none; }
+.credit-banner a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="credit-banner">Created by <a href="https://graysvertebrateanatomy.com" target="_blank" rel="noopener">Dr. Jaimi A. Gray</a>, <a href="https://www.ctlab.geo.utexas.edu/" target="_blank" rel="noopener">University of Texas High-Resolution X-ray Computed Tomography Facility</a></div>
+  <header>
+    <div class="header-left">
+      <div class="title">OsteoCentric Bone Fastener</div>
+      <div class="subtitle">3D Specimen · Orthopedic Research</div>
+    </div>
+    <div class="header-right">
+      <div class="badge accent" id="rot-badge">● Auto-rotating</div>
+      <div class="badge">GLB Model</div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <div class="mv-wrap">
+      <model-viewer
+        id="mv"
+        src="osteocentric-bone-screws-small.glb"
+        auto-rotate
+        camera-controls
+        exposure="0.42"
+        shadow-intensity="2"
+        shadow-softness="0.4"
+        tone-mapping="commerce"
+        environment-image="neutral"
+        style="--poster-color:#0c0f14"
+      ></model-viewer>
+    </div>
+
+    <div class="panel">
+      <div class="p-section">
+        <div class="p-label">Legend</div>
+        <div class="legend-item">
+          <div class="legend-dot osteocentric"></div>
+          <div class="legend-text"><strong>OsteoCentric fastener</strong>Novel design engineered to minimize bone micro-damage during insertion</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot standard"></div>
+          <div class="legend-text"><strong>Industry Standard screw</strong>Conventional orthopedic bone screw used as comparative baseline</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot bone"></div>
+          <div class="legend-text"><strong>Human Bone Specimen</strong>Cortical and trabecular bone tissue showing fastener purchase zones</div>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Lighting</div>
+        <div class="ctrl">
+          <span class="ctrl-l">Exposure</span>
+          <input type="range" id="s-exp" min="0.2" max="3" step="0.05" value="0.7">
+          <span class="ctrl-v" id="v-exp">0.7</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-l">Shadow</span>
+          <input type="range" id="s-shad" min="0" max="2" step="0.05" value="1">
+          <span class="ctrl-v" id="v-shad">1.0</span>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl-l">Softness</span>
+          <input type="range" id="s-soft" min="0" max="1" step="0.05" value="1">
+          <span class="ctrl-v" id="v-soft">1.0</span>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Display</div>
+        <div class="tog-row">
+          <span class="ctrl-l" style="font-size:10px;color:var(--muted)">Auto-rotate</span>
+          <label class="tog"><input type="checkbox" id="t-rot" checked><span class="tog-t"></span></label>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Camera</div>
+        <div class="cam-btns">
+          <button class="cam-btn" id="cb-front">Front</button>
+          <button class="cam-btn" id="cb-side">Side</button>
+          <button class="cam-btn" id="cb-top">Top</button>
+          <button class="cam-btn" id="cb-reset">Reset</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// model-viewer resets inline styles during init, so size it after its own load event
+function sizeMV() {
+  const mv = document.getElementById('mv');
+  const wrap = mv.parentElement;
+  const r = wrap.getBoundingClientRect();
+  mv.style.setProperty('width',  r.width  + 'px', 'important');
+  mv.style.setProperty('height', r.height + 'px', 'important');
+}
+document.getElementById('mv').addEventListener('load', sizeMV);
+window.addEventListener('resize', sizeMV);
+
+const mv = document.getElementById('mv');
+
+function sl(id, vid, cb) {
+  const el = document.getElementById(id), vl = document.getElementById(vid);
+  el.addEventListener('input', () => {
+    const v = parseFloat(el.value);
+    cb(v);
+    vl.textContent = v.toFixed(2).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  });
+}
+
+sl('s-exp',  'v-exp',  v => mv.exposure = v);
+sl('s-shad', 'v-shad', v => mv.shadowIntensity = v);
+sl('s-soft', 'v-soft', v => mv.shadowSoftness = v);
+
+document.getElementById('t-rot').addEventListener('change', e => {
+  mv.setAttribute('auto-rotate', '');
+  if (!e.target.checked) mv.removeAttribute('auto-rotate');
+  document.getElementById('rot-badge').textContent = e.target.checked ? '● Auto-rotating' : '○ Paused';
+});
+
+mv.addEventListener('camera-change', () => {
+  if (mv.getAttribute('auto-rotate') === null) {
+    document.getElementById('t-rot').checked = false;
+    document.getElementById('rot-badge').textContent = '○ Paused';
+  }
+});
+
+// Camera presets using model-viewer's camera-orbit attribute
+document.getElementById('cb-front').addEventListener('click', () => mv.cameraOrbit = '0deg 90deg auto');
+document.getElementById('cb-side').addEventListener('click', () => mv.cameraOrbit = '90deg 90deg auto');
+document.getElementById('cb-top').addEventListener('click', () => mv.cameraOrbit = '0deg 0deg auto');
+document.getElementById('cb-reset').addEventListener('click', () => {
+  mv.cameraOrbit = 'auto auto auto';
+  mv.fieldOfView = 'auto';
+  mv.cameraTarget = 'auto';
+});
+</script>
+</body>
+</html>
