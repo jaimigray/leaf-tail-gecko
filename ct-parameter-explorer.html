@@ -45,16 +45,18 @@ button{font-family:inherit;color:inherit}
 .titlebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .titlebar h1{font-size:15px;font-weight:600;letter-spacing:0.01em;}
 .badge{font-size:9px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:4px 10px;border-radius:100px;white-space:nowrap;}
-.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.tgroup{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden;}
-.tbtn{padding:6px 10px;background:transparent;border:0;border-right:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9.5px;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.toolbar{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;}
+.tset{display:flex;align-items:center;gap:8px;}
+.tgroup{display:flex;border:1px solid rgba(255,255,255,0.16);border-radius:7px;overflow:hidden;}
+.tbtn{padding:10px 15px;background:rgba(255,255,255,0.03);border:0;border-right:1px solid rgba(255,255,255,0.16);color:#c9c1de;font-family:var(--sans);font-size:13.5px;font-weight:500;letter-spacing:0.01em;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .tbtn:last-child{border-right:0}
-.tbtn:hover{color:var(--text)}
-.tbtn.on{background:rgba(94,234,212,0.14);color:var(--accent2)}
-.tlabel{font-size:8px;font-family:var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-right:2px}
-#stageWrap{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center;}
-#stage{position:relative;width:min(100%, calc((100vh - 235px) * 2 + 8px));}
-#stage.wipe{width:min(100%, calc(100vh - 235px));}
+.tbtn:hover{color:#fff;background:rgba(255,255,255,0.09)}
+.tbtn.on{background:rgba(94,234,212,0.22);color:var(--accent2);box-shadow:inset 0 -3px 0 var(--accent2)}
+.tbtn.solo{border:1px solid rgba(255,255,255,0.16);border-radius:7px}
+.tlabel{font-size:10.5px;font-family:var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+#stageWrap{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center;overflow:hidden;}
+#stage{position:relative;width:min(100%, calc(var(--h, calc(100vh - 320px)) * 2 + 8px));}
+#stage.wipe{width:min(100%, var(--h, calc(100vh - 320px)));}
 #stage.side{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .pane{position:relative;overflow:hidden;aspect-ratio:1;background:#000;border-radius:6px;border:1px solid var(--border);touch-action:none;}
 #stage.wipe .pane{position:absolute;inset:0;}
@@ -130,6 +132,11 @@ table.stat td:first-child,table.stat th:first-child{text-align:left}
 #fatal{display:none;margin:40px auto;max-width:520px;padding:18px;border:1px solid var(--warn);border-radius:8px;font-size:13px;line-height:1.6}
 #fatal code{font-family:var(--mono);color:var(--accent2)}
 
+@media (max-width:1180px){
+  .tlabel{display:none}
+  .tbtn{padding:9px 12px;font-size:13px}
+  .toolbar{gap:8px 12px}
+}
 @media (max-width:900px){
   body{overflow:auto}
   #app{display:block;height:auto}
@@ -153,18 +160,30 @@ table.stat td:first-child,table.stat th:first-child{text-align:left}
       <span class="badge" id="badgeLevel"></span>
     </div>
     <div class="toolbar">
-      <span class="tlabel">View</span>
-      <div class="tgroup">
-        <button class="tbtn on" id="modeSide">Side by side</button>
-        <button class="tbtn" id="modeWipe">Wipe</button>
+      <div class="tset">
+        <span class="tlabel">Display</span>
+        <div class="tgroup">
+          <button class="tbtn" data-wl="0.5,1">Full range</button>
+          <button class="tbtn" data-wl="0.72,0.55">Bone detail</button>
+          <button class="tbtn" data-wl="0.08,0.16">Show noise &amp; streaks</button>
+        </div>
       </div>
-      <span class="tlabel" style="margin-left:8px">Tool</span>
-      <div class="tgroup">
-        <button class="tbtn on" id="toolPan">Pan / zoom</button>
-        <button class="tbtn" id="toolR1"><span class="reg1">&#9632;</span> Region 1</button>
-        <button class="tbtn" id="toolR2"><span class="reg2">&#9632;</span> Region 2</button>
+      <div class="tset">
+        <span class="tlabel">View</span>
+        <div class="tgroup">
+          <button class="tbtn on" id="modeSide">Side by side</button>
+          <button class="tbtn" id="modeWipe">Wipe</button>
+        </div>
       </div>
-      <button class="tbtn" id="zoomReset" style="border:1px solid var(--border);border-radius:5px">Reset zoom</button>
+      <div class="tset">
+        <span class="tlabel">Tool</span>
+        <div class="tgroup">
+          <button class="tbtn on" id="toolPan">Pan / zoom</button>
+          <button class="tbtn" id="toolR1"><span class="reg1">&#9632;</span> Region 1</button>
+          <button class="tbtn" id="toolR2"><span class="reg2">&#9632;</span> Region 2</button>
+        </div>
+        <button class="tbtn solo" id="zoomReset">Reset zoom</button>
+      </div>
     </div>
     <div id="stageWrap">
       <div id="stage" class="side">
@@ -201,11 +220,7 @@ table.stat td:first-child,table.stat th:first-child{text-align:left}
 
     <section class="sec">
       <h2>Display</h2>
-      <div class="presets">
-        <button class="btn" data-wl="0.5,1">Full range</button>
-        <button class="btn" data-wl="0.72,0.55">Bone detail</button>
-        <button class="btn" data-wl="0.08,0.16">Show noise &amp; streaks</button>
-      </div>
+      <p class="hint" style="margin-bottom:8px">The Full range, Bone detail and Show noise &amp; streaks buttons are above the images. Fine-tune the window here.</p>
       <div class="wl">
         <label for="wlC">Level</label><input type="range" id="wlC" min="0" max="120" value="50"><output id="wlCo"></output>
         <label for="wlW">Width</label><input type="range" id="wlW" min="2" max="150" value="100"><output id="wlWo"></output>
@@ -532,6 +547,10 @@ function update() {
 function setWL(c, w) {
   S.wl.c = c; S.wl.w = w; $('wlC').value = Math.round(c*100); $('wlW').value = Math.round(w*100);
   $('wlCo').textContent = Math.round(c*100)+'%'; $('wlWo').textContent = Math.round(w*100)+'%'; scheduleDraw();
+  document.querySelectorAll('[data-wl]').forEach(b => {          // highlight the preset that matches the current window
+    const [pc, pw] = b.dataset.wl.split(',').map(Number);
+    b.classList.toggle('on', Math.abs(pc - c) < 0.006 && Math.abs(pw - w) < 0.006);
+  });
 }
 function setTool(t) {
   S.tool = t;
@@ -572,6 +591,9 @@ async function init() {
     if (e.key === 'ArrowLeft' && MAN.levels[i-1]) { S.level = MAN.levels[i-1].n; update(); }
   });
   new ResizeObserver(() => { clampView(); applyView(); }).observe($('paneA'));
+  // size the images to the space left under the (taller) toolbar instead of using a fixed offset
+  const wrap = $('stageWrap');
+  new ResizeObserver(() => wrap.style.setProperty('--h', Math.max(160, wrap.clientHeight) + 'px')).observe(wrap);
   setWL(0.5, 1.0); setTool('pan'); setMode('side'); update();
 }
 init();
