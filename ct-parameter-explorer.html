@@ -270,8 +270,8 @@ const EXPLAIN = {
     look:'Compare the air around the skull and the edges of the thin turbinate walls. See how many times you can halve the number of projections before the image visibly suffers, then check the noise with the Show noise &amp; streaks preset.'
   },
   bh: {
-    what:'As X-rays cross dense bone the low-energy ones are absorbed first, so the beam &ldquo;hardens&rdquo;. Left uncorrected this makes the middle of dense bone look darker than its edges (cupping) and draws dark bands between dense objects. The correction is applied in software when the scan is reconstructed (0 = off, 0.1 = light correction).',
-    look:'Compare the brightness across the thick bone of the mandibles and the calibration pin, and the gray background between dense structures.'
+    what:'As X-rays cross dense bone the low-energy ones are absorbed first, so the beam &ldquo;hardens&rdquo;. Left uncorrected this makes the middle of dense bone look darker than its edges (cupping) and draws dark bands between dense objects. The correction is applied in software when the scan is reconstructed (0 = off; higher values correct more strongly). Too much correction overshoots and adds artifacts of its own.',
+    look:'Compare the brightness across the thick bone of the mandibles and the calibration pin, and the gray background between dense structures. Then raise the correction step by step and watch for bright streaks fanning out from the dense bone.'
   },
   ring: {
     what:'Faulty or drifting detector pixels draw perfect circles (ring artifacts) centered on the axis the specimen turns around. Ring reduction is a step-scan acquisition mode designed to suppress them.',
