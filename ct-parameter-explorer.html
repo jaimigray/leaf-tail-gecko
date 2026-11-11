@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>CT Parameter Explorer · Raccoon Skull</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #0b0814;
+  --panel: #120d20;
+  --border: rgba(255,255,255,0.08);
+  --text: #ebe6f5;
+  --muted: #9a90b3;
+  --accent: #1f9e92;      /* teal */
+  --accent2: #5eead4;     /* bright teal */
+  --change: #c4a8ff;      /* light purple: highlights what changed */
+  --warn: #e0a04a;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);padding-top:32px;}
+body{overflow:hidden;}
+button{font-family:inherit;color:inherit}
+
+.credit-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: #0d1117; color: #ccc; font-size: 12px; text-align: center;
+  padding: 6px 16px; letter-spacing: 0.02em; border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.credit-banner a { text-decoration: none; }
+.credit-banner a:first-child { color: #9ecfef; }
+.credit-banner a:last-child { color: #f4a261; }
+.credit-banner a:hover { text-decoration: underline; }
+
+#app{display:grid;grid-template-columns:minmax(0,1fr) 370px;height:calc(100vh - 32px);}
+
+/* ---------- viewer column ---------- */
+#viewer{display:flex;flex-direction:column;min-width:0;padding:14px 16px 10px;gap:10px;overflow:hidden;}
+.titlebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.titlebar h1{font-size:15px;font-weight:600;letter-spacing:0.01em;}
+.badge{font-size:9px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:4px 10px;border-radius:100px;white-space:nowrap;}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.tgroup{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden;}
+.tbtn{padding:6px 10px;background:transparent;border:0;border-right:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:9.5px;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.tbtn:last-child{border-right:0}
+.tbtn:hover{color:var(--text)}
+.tbtn.on{background:rgba(94,234,212,0.14);color:var(--accent2)}
+.tlabel{font-size:8px;font-family:var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+#stageWrap{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center;}
+#stage{position:relative;width:min(100%, calc((100vh - 235px) * 2 + 8px));}
+#stage.wipe{width:min(100%, calc(100vh - 235px));}
+#stage.side{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pane{position:relative;overflow:hidden;aspect-ratio:1;background:#000;border-radius:6px;border:1px solid var(--border);touch-action:none;}
+#stage.wipe .pane{position:absolute;inset:0;}
+#stage.wipe{aspect-ratio:1;}
+#stage.wipe #paneB{clip-path:inset(0 0 0 var(--wipe,50%));}
+.world{position:absolute;left:0;top:0;width:960px;height:960px;transform-origin:0 0;}
+.world canvas{display:block;width:960px;height:960px;}
+.world.pix canvas{image-rendering:pixelated;}
+.world svg{position:absolute;inset:0;width:960px;height:960px;pointer-events:none;}
+.plabel{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:rgba(11,8,20,0.78);border:1px solid var(--border);border-radius:4px;padding:3px 8px;pointer-events:none;}
+#stage.wipe #paneB .plabel{left:auto;right:8px}
+.pchips{position:absolute;left:8px;bottom:8px;min-width:200px;max-width:calc(100% - 16px);pointer-events:none;background:rgba(11,8,20,0.86);border:1px solid var(--border);border-radius:6px;padding:7px 11px;font-size:13px;line-height:1.55;}
+#stage.wipe #paneB .pchips{left:auto;right:8px}
+.prow{display:flex;justify-content:space-between;gap:18px;color:#ddd6f0;}
+.prow .k{color:var(--muted)}
+.prow .v{font-family:var(--mono);font-weight:500;text-align:right}
+.prow.diff .k,.prow.diff .v{color:var(--change)}
+.prow.sim{justify-content:flex-start;color:var(--warn);margin-top:2px;padding-top:3px;border-top:1px solid var(--border)}
+#handle{position:absolute;top:0;bottom:0;width:0;z-index:5;display:none;cursor:ew-resize;touch-action:none;}
+#stage.wipe #handle{display:block;}
+#handle::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:var(--accent2);opacity:.9;}
+#handle::after{content:"\2194";position:absolute;left:-14px;top:50%;margin-top:-14px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 0 2px rgba(0,0,0,.5);}
+#loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--accent2);background:rgba(11,8,20,0.6);z-index:6;letter-spacing:0.1em;}
+.hint{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* ---------- side panel ---------- */
+#panel{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;padding:16px 16px 24px;display:flex;flex-direction:column;gap:18px;}
+.sec h2{font-size:8.5px;font-family:var(--mono);letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;font-weight:500;}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.lvl{padding:7px 8px;background:transparent;border:1px solid var(--border);border-radius:5px;cursor:pointer;text-align:left;transition:all .15s;}
+.lvl:hover{border-color:rgba(255,255,255,0.2)}
+.lvl.on{border-color:var(--accent2);background:rgba(94,234,212,0.1)}
+.lvl b{display:block;font-size:11px;font-weight:500;}
+.lvl span{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.prompt{margin-top:9px;font-size:12px;line-height:1.55;color:#ddd6f0;background:rgba(94,234,212,0.06);border-left:2px solid var(--accent);padding:8px 10px;border-radius:0 5px 5px 0;}
+.prompt small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:3px;}
+.pgroup{margin-bottom:11px;}
+.pgroup .pt{font-size:11.5px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pgroup .pt i{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--change);letter-spacing:0.06em;text-transform:uppercase}
+.seg{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden;}
+.seg button{flex:1;padding:7px 4px;background:transparent;border:0;border-right:1px solid var(--border);font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.seg button:last-child{border-right:0}
+.seg button:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.seg button.cur{background:rgba(94,234,212,0.16);color:var(--accent2);font-weight:500}
+.seg button.also{background-image:repeating-linear-gradient(135deg,transparent 0 5px,rgba(224,160,74,0.10) 5px 7px);}
+.seg button.cur.also{background-image:none}
+.refrow{display:flex;gap:6px;margin-top:4px}
+.btn{flex:1;padding:7px 8px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.btn:hover{color:var(--text);border-color:rgba(255,255,255,.22)}
+#snap{font-size:11.5px;color:var(--warn);line-height:1.45;margin-top:8px;min-height:0;}
+.card{border:1px solid var(--border);border-radius:6px;padding:10px 11px;margin-bottom:8px;background:rgba(255,255,255,0.02)}
+.card h3{font-size:12px;font-weight:600;margin-bottom:5px;}
+.card h3 em{font-style:normal;color:var(--change);font-weight:500}
+.card p{font-size:11.5px;line-height:1.55;color:#c5bddc;}
+.card p+p{margin-top:5px}
+.card p b{color:var(--text);font-weight:500}
+.card.warn{border-color:rgba(224,160,74,.45);background:rgba(224,160,74,.06)}
+.card.warn p{color:#e8c690}
+.card.note{border-color:rgba(158,207,239,.3)}
+.wl{display:grid;grid-template-columns:54px 1fr 40px;gap:6px 8px;align-items:center;font-size:11px;}
+.wl label{color:var(--muted)}
+.wl output{font-family:var(--mono);font-size:10px;text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent2);}
+.presets{display:flex;gap:5px;margin:8px 0 6px;flex-wrap:wrap}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#c5bddc;line-height:1.45;margin-top:8px}
+.chk input{margin-top:2px;accent-color:var(--accent2)}
+table.stat{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+table.stat th,table.stat td{padding:4px 5px;text-align:right;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px}
+table.stat th{color:var(--muted);font-weight:400;font-size:9px;letter-spacing:.06em}
+table.stat td:first-child,table.stat th:first-child{text-align:left}
+.reg1{color:#ff6a5c}.reg2{color:#58b7ff}
+.foot{font-size:10.5px;color:var(--muted);line-height:1.55;border-top:1px solid var(--border);padding-top:12px}
+#fatal{display:none;margin:40px auto;max-width:520px;padding:18px;border:1px solid var(--warn);border-radius:8px;font-size:13px;line-height:1.6}
+#fatal code{font-family:var(--mono);color:var(--accent2)}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  #app{display:block;height:auto}
+  #viewer{overflow:visible}
+  #stage,#stage.wipe{width:100%}
+  #stage.side{grid-template-columns:1fr;}
+  #panel{border-left:0;border-top:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+<div class="credit-banner">Created by <a href="https://graysvertebrateanatomy.com" target="_blank" rel="noopener">Dr. Jaimi A. Gray</a>, <a href="https://www.ctlab.geo.utexas.edu/" target="_blank" rel="noopener">University of Texas High-Resolution X-ray Computed Tomography Facility</a></div>
+
+<div id="fatal"></div>
+
+<div id="app">
+  <main id="viewer">
+    <div class="titlebar">
+      <h1>CT Parameter Explorer</h1>
+      <span class="badge">Procyon lotor · raccoon skull</span>
+      <span class="badge" id="badgeLevel"></span>
+    </div>
+    <div class="toolbar">
+      <span class="tlabel">View</span>
+      <div class="tgroup">
+        <button class="tbtn on" id="modeSide">Side by side</button>
+        <button class="tbtn" id="modeWipe">Wipe</button>
+      </div>
+      <span class="tlabel" style="margin-left:8px">Tool</span>
+      <div class="tgroup">
+        <button class="tbtn on" id="toolPan">Pan / zoom</button>
+        <button class="tbtn" id="toolR1"><span class="reg1">&#9632;</span> Region 1</button>
+        <button class="tbtn" id="toolR2"><span class="reg2">&#9632;</span> Region 2</button>
+      </div>
+      <button class="tbtn" id="zoomReset" style="border:1px solid var(--border);border-radius:5px">Reset zoom</button>
+    </div>
+    <div id="stageWrap">
+      <div id="stage" class="side">
+        <div class="pane" id="paneA"><div class="world" id="worldA"><canvas id="cA" width="960" height="960"></canvas><svg viewBox="0 0 960 960" id="svgA"></svg></div><div class="plabel">A &middot; reference</div><div class="pchips" id="chipsA"></div></div>
+        <div class="pane" id="paneB"><div class="world" id="worldB"><canvas id="cB" width="960" height="960"></canvas><svg viewBox="0 0 960 960" id="svgB"></svg></div><div class="plabel">B &middot; your selection</div><div class="pchips" id="chipsB"></div></div>
+        <div id="handle"></div>
+        <div id="loading">LOADING SLICE&hellip;</div>
+      </div>
+    </div>
+    <p class="hint" id="toolHint">Scroll to zoom, drag to pan. Both images move together so you can compare the same spot.</p>
+  </main>
+
+  <aside id="panel">
+    <section class="sec">
+      <h2>1 &middot; Choose an anatomical level</h2>
+      <div class="levels" id="levels"></div>
+      <div class="prompt" id="prompt"></div>
+    </section>
+
+    <section class="sec">
+      <h2>2 &middot; Change a scan setting (image B)</h2>
+      <div id="params"></div>
+      <div id="snap"></div>
+      <div class="refrow">
+        <button class="btn" id="pin">Use B as reference</button>
+        <button class="btn" id="reset">Reset to baseline</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>3 &middot; What changed?</h2>
+      <div id="explain"></div>
+    </section>
+
+    <section class="sec">
+      <h2>Display</h2>
+      <div class="presets">
+        <button class="btn" data-wl="0.5,1">Full range</button>
+        <button class="btn" data-wl="0.72,0.55">Bone detail</button>
+        <button class="btn" data-wl="0.08,0.16">Show noise &amp; streaks</button>
+      </div>
+      <div class="wl">
+        <label for="wlC">Level</label><input type="range" id="wlC" min="0" max="120" value="50"><output id="wlCo"></output>
+        <label for="wlW">Width</label><input type="range" id="wlW" min="2" max="150" value="100"><output id="wlWo"></output>
+      </div>
+      <label class="chk"><input type="checkbox" id="norm"><span>Scale each scan automatically (air = black, brightest bone = white), as you would when first opening a scan. Off by default, so both images use identical raw gray values.</span></label>
+    </section>
+
+    <section class="sec">
+      <h2>Measure it</h2>
+      <p class="hint">Pick <b class="reg1">Region 1</b> or <b class="reg2">Region 2</b> in the toolbar, then click (or drag a box) on the image. The same spot is measured in both scans. Put Region 1 on bone and Region 2 on air.</p>
+      <table class="stat" id="stat"></table>
+      <p class="hint" style="margin-top:7px">Values are % of each scan's display range. <b>CNR</b> = |Region 1 &minus; Region 2| &divide; noise (SD) in Region 2: higher means bone stands out more clearly against the grain.</p>
+    </section>
+
+    <div class="foot">Scans: NSI X500, Comet microfocal source, 72.28 &micro;m voxels, 7200 views, 220 &micro;A. Slices are registered to a common grid and cropped to the region all scans share. <b>Simulated images:</b> the 7200-projection image is the real scan. Images with fewer projections were simulated from it by re-projecting the slice (parallel-beam approximation) and rebuilding it from every 2nd, 4th, 8th&hellip; view, with random noise added to match the real scan&rsquo;s noise level. Exact streak patterns will differ somewhat from a true re-reconstruction from the raw projections. These data and/or images were produced at the University of Texas High-Resolution X-ray CT Facility (UTCT), which is supported by NSF EAR-2223808 and NASA PSEF 80NSSC23K0199.</div>
+  </aside>
+</div>
+
+<script>
+'use strict';
+/* ---------------- parameter definitions + explanatory text (DRAFT: review wording) ---------------- */
+const KEYS = ['kv','filter','avg','views','bh','ring'];
+const PARAMS = {
+  kv:     { title:'Tube voltage',               opts:[60,100,200],                     fmt:v=>v+' kV' },
+  filter: { title:'Beam filter',                opts:['none','aluminum','brass'],       fmt:v=>({none:'None',aluminum:'Aluminum',brass:'Brass'})[v] || (String(v).charAt(0).toUpperCase() + String(v).slice(1)) },
+  avg:    { title:'Frame averaging',            opts:[1,4],                            fmt:v=>v+(v===1?' frame':' frames') },
+  views:  { title:'Number of projections',      opts:[7200,3600,1800,900,450,225],     fmt:v=>String(v) },
+  bh:     { title:'Beam-hardening correction',  opts:[0,0.1],                          fmt:v=>v===0?'Off (0)':String(v) },
+  ring:   { title:'Ring reduction',             opts:[false,true],                     fmt:v=>v?'On':'Off' }
+};
+const SHORT = { kv:v=>v+' kV', filter:v=>({none:'No filter',aluminum:'Al filter',brass:'Brass filter'})[v], avg:v=>v+'× avg', views:v=>v+' views', bh:v=>'BH '+v, ring:v=>v?'Ring red. on':'Ring red. off' };
+const EXPLAIN = {
+  kv: {
+    what:'The tube voltage sets how energetic the X-rays are. Higher-energy X-rays pass through dense bone more easily, but different materials become harder to tell apart. Lower-energy X-rays give more contrast but are absorbed quickly, so thick bone lets very little through.',
+    look:'Look at how cleanly the thin bone stands apart from air, and whether broad streaks fan out from the dense calibration pin and the mandibles.'
+  },
+  filter: {
+    what:'A metal sheet in front of the X-ray source absorbs the lowest-energy X-rays before they reach the skull. Those low-energy X-rays are the main cause of beam-hardening artifacts (dark bands and streaks between dense objects). A denser filter cleans this up, but fewer X-rays get through, so the image gets grainier.',
+    look:'With no filter, look for dark and bright streaks around the calibration pin and between the two mandibles. With brass, look for the streaks fading while the grain in the air gets stronger.'
+  },
+  avg: {
+    what:'Each projection is built from several detector frames. Averaging more frames smooths out random (quantum) noise. Four frames should give roughly half the noise of one, at the cost of a longer scan.',
+    look:'Zoom in on the air around the skull and on thin bone. Compare the grain, then use the Show noise &amp; streaks display preset.'
+  },
+  views: {
+    what:'Each projection is one X-ray image taken at a slightly different angle as the skull rotates, and the computer pieces the slice together from all of them. With too few angles, the gaps between them show up as fine streaks and a rippled texture (strongest far from the center of rotation), and each remaining view contributes more of the random noise.',
+    look:'Compare the air around the skull and the edges of the thin turbinate walls. See how many times you can halve the number of projections before the image visibly suffers, then check the noise with the Show noise &amp; streaks preset.'
+  },
+  bh: {
+    what:'As X-rays cross dense bone the low-energy ones are absorbed first, so the beam &ldquo;hardens&rdquo;. Left uncorrected this makes the middle of dense bone look darker than its edges (cupping) and draws dark bands between dense objects. The correction is applied in software when the scan is reconstructed (0 = off, 0.1 = light correction).',
+    look:'Compare the brightness across the thick bone of the mandibles and the calibration pin, and the gray background between dense structures.'
+  },
+  ring: {
+    what:'Faulty or drifting detector pixels draw perfect circles (ring artifacts) centered on the axis the specimen turns around. Ring reduction is a step-scan acquisition mode designed to suppress them.',
+    look:'Use the Show noise &amp; streaks preset and look for faint concentric circles around the center of the slice, especially in the air and in large areas of uniform bone.'
+  }
+};
+
+/* ---------------- state ---------------- */
+const $ = id => document.getElementById(id);
+const S = {
+  level:null, sel:null, ref:null, last:null, mode:'side', tool:'pan', wipe:0.5,
+  wl:{c:0.5,w:1.0}, norm:false, view:{z:1,tx:0,ty:0}, roi:{1:null,2:null}
+};
+let MAN = null, SCANS = [], SIZE = 960;
+const cache = new Map();
+const ctxs = {};
+
+const scanById = id => SCANS.find(s => s.id === id);
+const sameParams = (a,b) => KEYS.every(k => a[k] === b[k]);
+const currentScan = () => SCANS.find(s => sameParams(s.params, S.sel));
+
+/* ---------------- data loading ---------------- */
+async function gunzip(buf) {
+  const u = new Uint8Array(buf);
+  if (!(u[0] === 0x1f && u[1] === 0x8b)) return buf;      // server already decompressed it
+  const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).arrayBuffer();
+}
+function withStats(raw) {
+  const W = SIZE, b = 80, corners = [];
+  for (const [ox,oy] of [[0,0],[W-b,0],[0,W-b],[W-b,W-b]])
+    for (let y = oy; y < oy+b; y++) for (let x = ox; x < ox+b; x++) corners.push(raw[y*W+x]);
+  corners.sort((p,q)=>p-q);
+  const air = corners[corners.length>>1];
+  const hist = new Uint32Array(65536); let n = 0;
+  for (let i = 0; i < raw.length; i++) { const v = raw[i]; if (v > 0) { hist[v]++; n++; } }
+  const target = n*0.998; let acc = 0, hi = 65535;
+  for (let v = 0; v < 65536; v++) { acc += hist[v]; if (acc >= target) { hi = v; break; } }
+  return { raw, air, hi };
+}
+function loadSlice(id, level) {
+  const key = id+'/'+level;
+  if (!cache.has(key)) {
+    cache.set(key, (async () => {
+      const res = await fetch(`ct-data/${id}/${level}.bin.gz`);
+      if (!res.ok) throw new Error(`${res.status} loading ${key}`);
+      const buf = await gunzip(await res.arrayBuffer());
+      return withStats(new Uint16Array(buf));
+    })());
+  }
+  return cache.get(key);
+}
+
+/* ---------------- rendering ---------------- */
+function paint(which, d, lo, hi) {
+  const cv = $('c'+which);
+  if (!ctxs[which]) { const c = cv.getContext('2d'); ctxs[which] = { c, img:c.createImageData(SIZE,SIZE) }; ctxs[which].u32 = new Uint32Array(ctxs[which].img.data.buffer); }
+  const { c, img, u32 } = ctxs[which];
+  const span = hi - lo, t0 = lo + (S.wl.c - S.wl.w/2)*span, t1 = lo + (S.wl.c + S.wl.w/2)*span;
+  const lut = new Uint32Array(65536), den = (t1 - t0) || 1;
+  for (let v = 0; v < 65536; v++) {
+    let t = (v - t0)/den; t = t < 0 ? 0 : t > 1 ? 1 : t;
+    const g = (t*255 + 0.5) | 0; lut[v] = 0xFF000000 | (g<<16) | (g<<8) | g;
+  }
+  const raw = d.raw; for (let i = 0; i < raw.length; i++) u32[i] = lut[raw[i]];
+  c.putImageData(img,0,0);
+}
+let drawPending = false;
+function scheduleDraw() { if (!drawPending) { drawPending = true; requestAnimationFrame(() => { drawPending = false; draw(); }); } }
+let dataA = null, dataB = null, normA = null, normB = null;
+function draw() {
+  if (!dataA || !dataB) return;
+  normA = { lo:dataA.air, hi:dataA.hi };
+  normB = S.norm ? { lo:dataB.air, hi:dataB.hi } : normA;
+  paint('A', dataA, normA.lo, normA.hi);
+  paint('B', dataB, normB.lo, normB.hi);
+  updateStats();
+}
+async function refresh() {
+  const cur = currentScan(); if (!cur) return;
+  const lvl = S.level, ids = [S.ref, cur.id];
+  $('loading').style.display = 'flex';
+  try {
+    [dataA, dataB] = await Promise.all(ids.map(id => loadSlice(id, lvl)));
+  } catch (e) { showFatal('Could not load the slice data. ' + e.message); return; }
+  if (lvl !== S.level || cur.id !== currentScan().id || ids[0] !== S.ref) return;   // superseded by a newer request
+  $('loading').style.display = 'none';
+  draw();
+  // warm the cache for the neighbouring levels in the background
+  const li = MAN.levels.findIndex(l => l.n === lvl);
+  [MAN.levels[li+1], MAN.levels[li-1]].forEach(l => { if (l) ids.forEach(id => loadSlice(id, l.n).catch(()=>{})); });
+}
+
+/* ---------------- view (zoom / pan / wipe) ---------------- */
+const fit = () => $('paneA').clientWidth / SIZE;
+function applyView() {
+  const f = fit(), v = S.view, k = f * v.z;
+  for (const w of ['worldA','worldB']) {
+    const el = $(w); el.style.transform = `translate(${v.tx}px,${v.ty}px) scale(${k})`;
+    el.classList.toggle('pix', k >= 2);
+  }
+  updateROIs();
+}
+function clampView() {
+  const v = S.view, pw = $('paneA').clientWidth, ph = $('paneA').clientHeight, k = fit()*v.z;
+  v.tx = Math.min(0, Math.max(pw - SIZE*k, v.tx)); v.ty = Math.min(0, Math.max(ph - SIZE*k, v.ty));
+}
+function zoomAt(px, py, factor) {
+  const v = S.view, f = fit(), z2 = Math.min(16, Math.max(1, v.z*factor));
+  const ix = (px - v.tx)/(f*v.z), iy = (py - v.ty)/(f*v.z);
+  v.z = z2; v.tx = px - ix*f*z2; v.ty = py - iy*f*z2; clampView(); applyView();
+}
+function setMode(m) {
+  S.mode = m; const st = $('stage');
+  st.classList.toggle('side', m === 'side'); st.classList.toggle('wipe', m === 'wipe');
+  $('modeSide').classList.toggle('on', m === 'side'); $('modeWipe').classList.toggle('on', m === 'wipe');
+  $('stage').style.setProperty('--wipe', (S.wipe*100)+'%'); $('handle').style.left = (S.wipe*100)+'%';
+  requestAnimationFrame(() => { clampView(); applyView(); });
+}
+
+/* ---------------- ROIs + statistics ---------------- */
+const NS = 'http://www.w3.org/2000/svg';
+function updateROIs() {
+  const k = fit()*S.view.z;
+  for (const w of ['A','B']) {
+    const svg = $('svg'+w); svg.innerHTML = '';
+    for (const r of [1,2]) {
+      const roi = S.roi[r]; if (!roi) continue;
+      const rect = document.createElementNS(NS,'rect');
+      rect.setAttribute('x',roi.x); rect.setAttribute('y',roi.y); rect.setAttribute('width',roi.w); rect.setAttribute('height',roi.h);
+      rect.setAttribute('fill','none'); rect.setAttribute('stroke', r === 1 ? '#ff6a5c' : '#58b7ff'); rect.setAttribute('stroke-width', 2/k);
+      svg.appendChild(rect);
+    }
+  }
+}
+function roiStats(d, norm, roi) {
+  const W = SIZE, x0 = Math.max(0,Math.round(roi.x)), y0 = Math.max(0,Math.round(roi.y)),
+        x1 = Math.min(W,Math.round(roi.x+roi.w)), y1 = Math.min(W,Math.round(roi.y+roi.h));
+  let s = 0, ss = 0, n = 0;
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { const v = d.raw[y*W+x]; s += v; ss += v*v; n++; }
+  if (!n) return null;
+  const mean = s/n, sd = Math.sqrt(Math.max(0, ss/n - mean*mean)), span = norm.hi - norm.lo;
+  return { mean:(mean-norm.lo)/span*100, sd:sd/span*100, rawSd:sd, rawMean:mean };
+}
+function updateStats() {
+  const t = $('stat'); if (!dataA || !dataB) return;
+  const rows = [['A',dataA,normA],['B',dataB,normB]]; let html = '<tr><th></th><th class="reg1">R1 mean</th><th class="reg1">R1 SD</th><th class="reg2">R2 mean</th><th class="reg2">R2 SD</th><th>CNR</th></tr>';
+  if (!S.roi[1] && !S.roi[2]) { t.innerHTML = ''; return; }
+  for (const [name,d,norm] of rows) {
+    const a = S.roi[1] && roiStats(d,norm,S.roi[1]), b = S.roi[2] && roiStats(d,norm,S.roi[2]);
+    const f = (o,k) => o ? o[k].toFixed(1) : '–';
+    const cnr = a && b && b.rawSd > 0 ? (Math.abs(a.rawMean - b.rawMean)/b.rawSd).toFixed(0) : '–';
+    html += `<tr><td>${name}</td><td>${f(a,'mean')}</td><td>${f(a,'sd')}</td><td>${f(b,'mean')}</td><td>${f(b,'sd')}</td><td>${cnr}</td></tr>`;
+  }
+  t.innerHTML = html;
+}
+
+/* ---------------- pointer handling ---------------- */
+let drag = null;
+function imgPoint(e) {
+  const r = $('paneA').getBoundingClientRect(); const pr = (S.mode === 'side' && e.target.closest && e.target.closest('#paneB')) ? $('paneB').getBoundingClientRect() : r;
+  const px = e.clientX - pr.left, py = e.clientY - pr.top, k = fit()*S.view.z;
+  return { px, py, x:(px - S.view.tx)/k, y:(py - S.view.ty)/k };
+}
+const stage = $('stage');
+stage.addEventListener('wheel', e => {
+  e.preventDefault(); const p = imgPoint(e); zoomAt(p.px, p.py, e.deltaY < 0 ? 1.18 : 1/1.18);
+}, { passive:false });
+stage.addEventListener('pointerdown', e => {
+  if (e.target.id === 'handle') { drag = { type:'wipe' }; stage.setPointerCapture(e.pointerId); return; }
+  const p = imgPoint(e);
+  if (S.tool === 'pan') drag = { type:'pan', sx:e.clientX, sy:e.clientY, tx:S.view.tx, ty:S.view.ty };
+  else drag = { type:'roi', r:S.tool === 'roi1' ? 1 : 2, x0:p.x, y0:p.y, moved:false };
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (drag.type === 'pan') { S.view.tx = drag.tx + e.clientX - drag.sx; S.view.ty = drag.ty + e.clientY - drag.sy; clampView(); applyView(); }
+  else if (drag.type === 'wipe') {
+    const r = stage.getBoundingClientRect(); S.wipe = Math.min(1, Math.max(0, (e.clientX - r.left)/r.width));
+    stage.style.setProperty('--wipe', (S.wipe*100)+'%'); $('handle').style.left = (S.wipe*100)+'%';
+  } else if (drag.type === 'roi') {
+    const p = imgPoint(e); if (Math.hypot(p.x - drag.x0, p.y - drag.y0) > 3) drag.moved = true;
+    if (drag.moved) { S.roi[drag.r] = { x:Math.min(drag.x0,p.x), y:Math.min(drag.y0,p.y), w:Math.abs(p.x-drag.x0), h:Math.abs(p.y-drag.y0) }; updateROIs(); updateStats(); }
+  }
+});
+const endDrag = e => {
+  if (drag && drag.type === 'roi' && !drag.moved) { const s = 40; S.roi[drag.r] = { x:drag.x0 - s/2, y:drag.y0 - s/2, w:s, h:s }; updateROIs(); updateStats(); }
+  drag = null;
+};
+stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
+
+/* ---------------- controls ---------------- */
+function pickScan(p, v) {            // scan with params[p] === v that disturbs the other settings the least
+  let best = null, bd = 99;
+  for (const s of SCANS) {
+    if (s.params[p] !== v) continue;
+    let d = 0; for (const k of KEYS) if (k !== p && s.params[k] !== S.sel[k]) d++;
+    if (d < bd) { bd = d; best = s; }
+  }
+  return { scan:best, extra:bd };
+}
+function buildParams() {
+  const box = $('params'); box.innerHTML = '';
+  for (const p of KEYS) {
+    const def = PARAMS[p], g = document.createElement('div'); g.className = 'pgroup';
+    const ref = scanById(S.ref).params[p], changed = ref !== S.sel[p];
+    g.innerHTML = `<div class="pt"><span>${def.title}</span>${changed ? '<i>changed</i>' : ''}</div>`;
+    const seg = document.createElement('div'); seg.className = 'seg';
+    for (const v of def.opts) {
+      const { scan, extra } = pickScan(p, v);
+      const b = document.createElement('button'); b.textContent = def.fmt(v);
+      if (!scan) { b.disabled = true; b.title = 'No scan available'; b.style.opacity = .3; }
+      else {
+        if (S.sel[p] === v) b.classList.add('cur');
+        if (extra > 0) { b.classList.add('also'); b.title = 'No scan has exactly this combination, so other settings will also change'; }
+        b.onclick = () => choose(p, v);
+      }
+      seg.appendChild(b);
+    }
+    g.appendChild(seg); box.appendChild(g);
+  }
+}
+function choose(p, v) {
+  if (S.sel[p] === v) return;
+  const before = { ...S.sel }, { scan } = pickScan(p, v); S.sel = { ...scan.params }; S.last = p;
+  const also = KEYS.filter(k => k !== p && before[k] !== S.sel[k]);
+  $('snap').innerHTML = also.length
+    ? `No scan has ${PARAMS[p].title.toLowerCase()} set to <b>${PARAMS[p].fmt(v)}</b> with the other settings unchanged, so this also switched: ${also.map(k => `<b>${PARAMS[k].title.toLowerCase()}</b> to ${PARAMS[k].fmt(S.sel[k])}`).join(', ')}.`
+    : '';
+  update();
+}
+const LABEL = { kv:'Tube voltage', filter:'Filter', avg:'Frame averaging', views:'Projections', bh:'BH correction', ring:'Ring reduction' };
+function chipsFor(which, scan, other) {
+  $('chips'+which).innerHTML = KEYS.map(k => `<div class="prow${scan.params[k] !== other[k] ? ' diff' : ''}"><span class="k">${LABEL[k]}</span><span class="v">${PARAMS[k].fmt(scan.params[k])}</span></div>`).join('')
+    + (scan.simulated ? '<div class="prow sim">Simulated image</div>' : '');
+}
+function buildExplain() {
+  const a = scanById(S.ref), b = currentScan(), box = $('explain');
+  const diff = KEYS.filter(k => a.params[k] !== b.params[k]); let h = '';
+  if (!diff.length) h += '<div class="card"><p>Both panes show the same scan. Change a setting above to see what it does to the image.</p></div>';
+  else {
+    if (diff.length > 1) {
+      // closest scan to B that differs from it in only the setting the student just changed
+      const p = S.last, clean = p && SCANS.filter(s => s.id !== b.id && KEYS.every(k => k === p ? s.params[k] !== b.params[k] : s.params[k] === b.params[k]))
+        .sort((x,y) => (y.params[p] === a.params[p]) - (x.params[p] === a.params[p]))[0];
+      h += `<div class="card warn"><h3>Not a one-setting comparison</h3><p>A and B differ in <b>${diff.length} settings</b> (${diff.map(k => PARAMS[k].title.toLowerCase()).join(', ')}), so you can&rsquo;t pin any difference on a single cause.</p>`
+        + (clean ? `<p><button class="btn" id="cleanBtn" style="margin-top:4px;width:100%">Compare against ${clean.params.kv} kV &middot; ${SHORT.filter(clean.params.filter)} &middot; BH ${clean.params.bh} instead</button></p>` : '')
+        + '</div>';
+      if (clean) setTimeout(() => { const btn = $('cleanBtn'); if (btn) btn.onclick = () => { S.ref = clean.id; $('snap').textContent = ''; update(); }; });
+    }
+    for (const k of diff) h += `<div class="card"><h3>${PARAMS[k].title}: <em>${PARAMS[k].fmt(a.params[k])} &rarr; ${PARAMS[k].fmt(b.params[k])}</em></h3><p>${EXPLAIN[k].what}</p><p><b>What to look for:</b> ${EXPLAIN[k].look}</p></div>`;
+  }
+  for (const [n,s] of [['A',a],['B',b]]) if (s.note && (n === 'B' || a.id !== b.id)) h += `<div class="card note"><p><b>Scan note (${n}):</b> ${s.note}</p></div>`;
+  box.innerHTML = h;
+}
+function buildLevels() {
+  const box = $('levels'); box.innerHTML = '';
+  MAN.levels.forEach((l,i) => {
+    const b = document.createElement('button'); b.className = 'lvl' + (l.n === S.level ? ' on' : '');
+    b.innerHTML = `<b>${l.name}</b><span>slice ${l.n}</span>`; b.onclick = () => { S.level = l.n; update(); };
+    box.appendChild(b);
+  });
+  const l = MAN.levels.find(x => x.n === S.level);
+  $('prompt').innerHTML = `<small>${l.region}</small>${l.prompt}`;
+  $('badgeLevel').textContent = `${l.name} · slice ${l.n}`;
+}
+function update() {
+  const b = currentScan(), a = scanById(S.ref);
+  buildLevels(); buildParams(); buildExplain(); chipsFor('A', a, b.params); chipsFor('B', b, a.params);
+  refresh();
+}
+function setWL(c, w) {
+  S.wl.c = c; S.wl.w = w; $('wlC').value = Math.round(c*100); $('wlW').value = Math.round(w*100);
+  $('wlCo').textContent = Math.round(c*100)+'%'; $('wlWo').textContent = Math.round(w*100)+'%'; scheduleDraw();
+}
+function setTool(t) {
+  S.tool = t;
+  for (const [id,n] of [['toolPan','pan'],['toolR1','roi1'],['toolR2','roi2']]) $(id).classList.toggle('on', n === t);
+  stage.style.cursor = t === 'pan' ? 'grab' : 'crosshair';
+  $('toolHint').textContent = t === 'pan'
+    ? 'Scroll to zoom, drag to pan. Both images move together so you can compare the same spot.'
+    : 'Click to drop a small measurement box, or drag to draw your own. The same spot is measured in both scans.';
+}
+function showFatal(msg) { const f = $('fatal'); f.style.display = 'block'; f.innerHTML = msg; $('loading').style.display = 'none'; }
+
+/* ---------------- init ---------------- */
+async function init() {
+  if (typeof DecompressionStream === 'undefined') { showFatal('This browser is too old to open the scan data. Please use a recent version of Chrome, Edge, Firefox or Safari.'); return; }
+  try { MAN = await (await fetch('ct-data/manifest.json')).json(); }
+  catch (e) { showFatal('Could not load <code>ct-data/manifest.json</code>. If you opened this file directly from disk, run <code>serve.ps1</code> and open <code>http://localhost:3456/ct-parameter-explorer.html</code> instead.'); return; }
+  SIZE = MAN.size; SCANS = MAN.scans;
+  // option lists come from the scans actually in the manifest, so new values (e.g. extra BH levels) appear automatically
+  for (const k of KEYS) {
+    const known = PARAMS[k].opts, rank = v => { const i = known.indexOf(v); return i < 0 ? 99 : i; };
+    const vals = [...new Set(SCANS.map(s => s.params[k]))];
+    vals.sort(k === 'views' ? (a,b) => b - a : typeof vals[0] === 'number' ? (a,b) => a - b : (a,b) => rank(a) - rank(b));
+    PARAMS[k].opts = vals;
+  }
+  S.level = 913; S.ref = MAN.baseline; S.sel = { ...scanById(MAN.baseline).params };
+  $('modeSide').onclick = () => setMode('side'); $('modeWipe').onclick = () => setMode('wipe');
+  $('toolPan').onclick = () => setTool('pan'); $('toolR1').onclick = () => setTool('roi1'); $('toolR2').onclick = () => setTool('roi2');
+  $('zoomReset').onclick = () => { S.view = { z:1, tx:0, ty:0 }; applyView(); };
+  $('pin').onclick = () => { S.ref = currentScan().id; $('snap').textContent = ''; update(); };
+  $('reset').onclick = () => { S.ref = MAN.baseline; S.sel = { ...scanById(MAN.baseline).params }; $('snap').textContent = ''; update(); };
+  $('wlC').oninput = e => setWL(e.target.value/100, S.wl.w); $('wlW').oninput = e => setWL(S.wl.c, e.target.value/100);
+  document.querySelectorAll('[data-wl]').forEach(b => b.onclick = () => { const [c,w] = b.dataset.wl.split(',').map(Number); setWL(c,w); });
+  $('norm').onchange = e => { S.norm = e.target.checked; scheduleDraw(); };
+  window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    const i = MAN.levels.findIndex(l => l.n === S.level);
+    if (e.key === 'ArrowRight' && MAN.levels[i+1]) { S.level = MAN.levels[i+1].n; update(); }
+    if (e.key === 'ArrowLeft' && MAN.levels[i-1]) { S.level = MAN.levels[i-1].n; update(); }
+  });
+  new ResizeObserver(() => { clampView(); applyView(); }).observe($('paneA'));
+  setWL(0.5, 1.0); setTool('pan'); setMode('side'); update();
+}
+init();
+</script>
+</body>
+</html>
