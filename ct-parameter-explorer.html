@@ -66,12 +66,13 @@ button{font-family:inherit;color:inherit}
 .world svg{position:absolute;inset:0;width:960px;height:960px;pointer-events:none;}
 .plabel{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;background:rgba(11,8,20,0.78);border:1px solid var(--border);border-radius:4px;padding:3px 8px;pointer-events:none;}
 #stage.wipe #paneB .plabel{left:auto;right:8px}
-.pchips{position:absolute;left:8px;right:8px;bottom:8px;display:flex;flex-wrap:wrap;gap:4px;pointer-events:none;}
-#stage.wipe .pchips{right:auto;max-width:calc(50% - 14px)}
-#stage.wipe #paneB .pchips{left:auto;right:8px;justify-content:flex-end}
-.chip{font-family:var(--mono);font-size:9.5px;background:rgba(11,8,20,0.82);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:#d6cfe8;}
-.chip.diff{border-color:var(--change);color:var(--change);}
-.chip.sim{border-color:var(--warn);color:var(--warn);}
+.pchips{position:absolute;left:8px;bottom:8px;min-width:200px;max-width:calc(100% - 16px);pointer-events:none;background:rgba(11,8,20,0.86);border:1px solid var(--border);border-radius:6px;padding:7px 11px;font-size:13px;line-height:1.55;}
+#stage.wipe #paneB .pchips{left:auto;right:8px}
+.prow{display:flex;justify-content:space-between;gap:18px;color:#ddd6f0;}
+.prow .k{color:var(--muted)}
+.prow .v{font-family:var(--mono);font-weight:500;text-align:right}
+.prow.diff .k,.prow.diff .v{color:var(--change)}
+.prow.sim{justify-content:flex-start;color:var(--warn);margin-top:2px;padding-top:3px;border-top:1px solid var(--border)}
 #handle{position:absolute;top:0;bottom:0;width:0;z-index:5;display:none;cursor:ew-resize;touch-action:none;}
 #stage.wipe #handle{display:block;}
 #handle::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;background:var(--accent2);opacity:.9;}
@@ -209,7 +210,7 @@ table.stat td:first-child,table.stat th:first-child{text-align:left}
         <label for="wlC">Level</label><input type="range" id="wlC" min="0" max="120" value="50"><output id="wlCo"></output>
         <label for="wlW">Width</label><input type="range" id="wlW" min="2" max="150" value="100"><output id="wlWo"></output>
       </div>
-      <label class="chk"><input type="checkbox" id="norm" checked><span>Scale each scan automatically (air = black, brightest bone = white), as you would when first opening a scan. Untick to use identical raw gray values for both.</span></label>
+      <label class="chk"><input type="checkbox" id="norm"><span>Scale each scan automatically (air = black, brightest bone = white), as you would when first opening a scan. Off by default, so both images use identical raw gray values.</span></label>
     </section>
 
     <section class="sec">
@@ -267,7 +268,7 @@ const EXPLAIN = {
 const $ = id => document.getElementById(id);
 const S = {
   level:null, sel:null, ref:null, last:null, mode:'side', tool:'pan', wipe:0.5,
-  wl:{c:0.5,w:1.0}, norm:true, view:{z:1,tx:0,ty:0}, roi:{1:null,2:null}
+  wl:{c:0.5,w:1.0}, norm:false, view:{z:1,tx:0,ty:0}, roi:{1:null,2:null}
 };
 let MAN = null, SCANS = [], SIZE = 960;
 const cache = new Map();
@@ -488,9 +489,10 @@ function choose(p, v) {
     : '';
   update();
 }
+const LABEL = { kv:'Tube voltage', filter:'Filter', avg:'Frame averaging', views:'Projections', bh:'BH correction', ring:'Ring reduction' };
 function chipsFor(which, scan, other) {
-  $('chips'+which).innerHTML = KEYS.map(k => `<span class="chip${scan.params[k] !== other[k] ? ' diff' : ''}">${SHORT[k](scan.params[k])}</span>`).join('')
-    + (scan.simulated ? '<span class="chip sim">simulated</span>' : '');
+  $('chips'+which).innerHTML = KEYS.map(k => `<div class="prow${scan.params[k] !== other[k] ? ' diff' : ''}"><span class="k">${LABEL[k]}</span><span class="v">${PARAMS[k].fmt(scan.params[k])}</span></div>`).join('')
+    + (scan.simulated ? '<div class="prow sim">Simulated image</div>' : '');
 }
 function buildExplain() {
   const a = scanById(S.ref), b = currentScan(), box = $('explain');
