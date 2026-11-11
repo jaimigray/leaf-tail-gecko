@@ -20,7 +20,8 @@
     { "id": "brass_bh0", "params": { "kv": 100, "filter": "brass",    "avg": 4, "views": 7200, "bh": 0,   "ring": false } },
     { "id": "none_bh01", "params": { "kv": 100, "filter": "none",     "avg": 4, "views": 7200, "bh": 0.1, "ring": false } },
     { "id": "none_bh0",  "params": { "kv": 100, "filter": "none",     "avg": 4, "views": 7200, "bh": 0,   "ring": false } },
-    { "id": "al_200kv",  "params": { "kv": 200, "filter": "aluminum", "avg": 4, "views": 7200, "bh": 0,   "ring": false }, "note": "Run as an over-exposure test (the scan was named 'oversaturated'): the detector signal saturates and broad streaks cross the whole slice." },
+    { "id": "al_200kv_bh0",  "params": { "kv": 200, "filter": "aluminum", "avg": 4, "views": 7200, "bh": 0,   "ring": false }, "note": "Run as an over-exposure test (the scan was named 'oversaturated'): the detector signal saturates and broad streaks cross the whole slice." },
+    { "id": "al_200kv_bh01", "params": { "kv": 200, "filter": "aluminum", "avg": 4, "views": 7200, "bh": 0.1, "ring": false }, "note": "Run as an over-exposure test (the scan was named 'oversaturated'): the detector signal saturates and broad streaks cross the whole slice. At 200 kV, switching the beam-hardening correction between 0 and 0.1 changes this image very little." },
     { "id": "al_60kv",   "params": { "kv": 60,  "filter": "aluminum", "avg": 4, "views": 7200, "bh": 0.1, "ring": false }, "note": "Run as an under-exposure test (the scan was named 'undersaturated'): low X-ray energy means little signal gets through thick bone." },
 
     { "id": "al_bh01_v3600", "simulated": true, "params": { "kv": 100, "filter": "aluminum", "avg": 4, "views": 3600, "bh": 0.1, "ring": false }, "note": "Simulated: built from the real 7200-projection baseline using every 2nd view (see the note at the bottom of the page)." },

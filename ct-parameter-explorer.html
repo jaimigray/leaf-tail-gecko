@@ -230,10 +230,10 @@ table.stat td:first-child,table.stat th:first-child{text-align:left}
 const KEYS = ['kv','filter','avg','views','bh','ring'];
 const PARAMS = {
   kv:     { title:'Tube voltage',               opts:[60,100,200],                     fmt:v=>v+' kV' },
-  filter: { title:'Beam filter',                opts:['none','aluminum','brass'],       fmt:v=>({none:'None',aluminum:'Aluminum',brass:'Brass'})[v] },
+  filter: { title:'Beam filter',                opts:['none','aluminum','brass'],       fmt:v=>({none:'None',aluminum:'Aluminum',brass:'Brass'})[v] || (String(v).charAt(0).toUpperCase() + String(v).slice(1)) },
   avg:    { title:'Frame averaging',            opts:[1,4],                            fmt:v=>v+(v===1?' frame':' frames') },
   views:  { title:'Number of projections',      opts:[7200,3600,1800,900,450,225],     fmt:v=>String(v) },
-  bh:     { title:'Beam-hardening correction',  opts:[0,0.1],                          fmt:v=>v===0?'Off (0)':'On (0.1)' },
+  bh:     { title:'Beam-hardening correction',  opts:[0,0.1],                          fmt:v=>v===0?'Off (0)':String(v) },
   ring:   { title:'Ring reduction',             opts:[false,true],                     fmt:v=>v?'On':'Off' }
 };
 const SHORT = { kv:v=>v+' kV', filter:v=>({none:'No filter',aluminum:'Al filter',brass:'Brass filter'})[v], avg:v=>v+'× avg', views:v=>v+' views', bh:v=>'BH '+v, ring:v=>v?'Ring red. on':'Ring red. off' };
@@ -549,6 +549,13 @@ async function init() {
   try { MAN = await (await fetch('ct-data/manifest.json')).json(); }
   catch (e) { showFatal('Could not load <code>ct-data/manifest.json</code>. If you opened this file directly from disk, run <code>serve.ps1</code> and open <code>http://localhost:3456/ct-parameter-explorer.html</code> instead.'); return; }
   SIZE = MAN.size; SCANS = MAN.scans;
+  // option lists come from the scans actually in the manifest, so new values (e.g. extra BH levels) appear automatically
+  for (const k of KEYS) {
+    const known = PARAMS[k].opts, rank = v => { const i = known.indexOf(v); return i < 0 ? 99 : i; };
+    const vals = [...new Set(SCANS.map(s => s.params[k]))];
+    vals.sort(k === 'views' ? (a,b) => b - a : typeof vals[0] === 'number' ? (a,b) => a - b : (a,b) => rank(a) - rank(b));
+    PARAMS[k].opts = vals;
+  }
   S.level = 913; S.ref = MAN.baseline; S.sel = { ...scanById(MAN.baseline).params };
   $('modeSide').onclick = () => setMode('side'); $('modeWipe').onclick = () => setMode('wipe');
   $('toolPan').onclick = () => setTool('pan'); $('toolR1').onclick = () => setTool('roi1'); $('toolR2').onclick = () => setTool('roi2');
